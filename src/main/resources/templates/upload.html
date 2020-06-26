@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<h1>Загрузка формы графика диспетчеров</h1>
+
+<hr/>
+
+<form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
+  <input type="file" name="file"/> <br/><br/>
+  <button type="submit">Загрузить!</button>
+</form>
+
+<hr/>
+
+<div th:if="${message}">
+  <h2 th:text="${message}"/>
+</div>
+
+</body>
+</html>
