@@ -157,9 +157,6 @@ public class FileService {
         Integer monthNumber = monthNumber(header);
         Integer yearNumber = yearNumber(header);
         Integer dayCount = dayCount(monthNumber, yearNumber);
-        Person tempPerson;
-        Schedule tempSchedule;
-        LocalDate tempDate;
         for (int i = 3; i < dayCount + 3; i++) {
             for (int j = 7; j < 7 + 2 * n; j = j + 2) {
                 HSSFRow row = worksheet.getRow(j);
@@ -191,9 +188,6 @@ public class FileService {
         Integer monthNumber = monthNumber(header);
         Integer yearNumber = yearNumber(header);
         Integer dayCount = dayCount(monthNumber, yearNumber);
-        Person tempPerson;
-        Schedule tempSchedule;
-        LocalDate tempDate;
         for (int i = 3; i < dayCount + 3; i++) {
             for (int j = 5; j < 5 + 2 * n; j = j + 2) {
                 HSSFRow row = worksheet.getRow(j);

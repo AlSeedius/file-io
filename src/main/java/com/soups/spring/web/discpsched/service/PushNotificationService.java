@@ -49,16 +49,18 @@ public class PushNotificationService {
             for (Schedule schedule : schedules) {
                 if (userRepository.findByAppID(schedule.getPersonId()).size() > 0) {
                     String token = userRepository.findByAppID(schedule.getPersonId()).get(0).getToken();
-                    if (schedule.getType().equals("1")) {
-                        pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
-                        pushNotificationRequest.setToken(token);
-                        fcmService.sendMessageToToken(pushNotificationRequest);
-                  //      logger.info("Отправили на" + token);
-                    } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
-                        pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста. Выспитесь крепко, или предупредите начальство, что не придёте.");
-                        pushNotificationRequest.setToken(token);
-                        fcmService.sendMessageToToken(pushNotificationRequest);
-                  //      logger.info("Отправили на" + token);
+                    if (token.length()>0) {
+                        if (schedule.getType().equals("1")) {
+                            pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
+                            pushNotificationRequest.setToken(token);
+                            fcmService.sendMessageToToken(pushNotificationRequest);
+                            //      logger.info("Отправили на" + token);
+                        } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
+                            pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста. Выспитесь крепко, или предупредите начальство, что не придёте.");
+                            pushNotificationRequest.setToken(token);
+                            fcmService.sendMessageToToken(pushNotificationRequest);
+                            //      logger.info("Отправили на" + token);
+                        }
                     }
                 }
             }
