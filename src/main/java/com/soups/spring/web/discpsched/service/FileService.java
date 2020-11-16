@@ -26,6 +26,9 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -75,20 +78,21 @@ public class FileService {
     }
 
     private void startParsing(MultipartFile reapExcelDataFile) throws IOException {
-        HSSFWorkbook workbook = new HSSFWorkbook(reapExcelDataFile.getInputStream());
-        if (rduN(workbook) == 1) {
-            for (int i = 0; i < 3; i++) {
-                Integer n = parseNamesVRN(workbook.getSheetAt(i));
-                parseScheduleVRN(workbook.getSheetAt(i), n);
-            }
+        String fileName = reapExcelDataFile.getOriginalFilename();
+        String expansion = fileName.substring(fileName.indexOf("."));
+        if (expansion.equals(".xlsx")) {
+            XSSFWorkbook workbook = new XSSFWorkbook(reapExcelDataFile.getInputStream());
+            Integer n = parseNamesVRN(workbook.getSheetAt(0));
+            parseScheduleVRN(workbook.getSheetAt(0), n);
         }
         else {
+            HSSFWorkbook workbook = new HSSFWorkbook(reapExcelDataFile.getInputStream());
             int i = workbook.getNumberOfSheets() - 1;
             Integer n = parseNamesLPC(workbook.getSheetAt(i));
             parseScheduleLPC(workbook.getSheetAt(i),n);
         }
     }
-    private Integer parseNamesVRN(HSSFSheet worksheet) {
+/*    private Integer parseNamesVRN(HSSFSheet worksheet) {
         int k = 0;
         for (int i = 7; i < worksheet.getPhysicalNumberOfRows(); i = i + 2) {
             HSSFRow row = worksheet.getRow(i);
@@ -111,7 +115,31 @@ public class FileService {
                 }
         }
         return k;
+    }*/
+private Integer parseNamesVRN(XSSFSheet worksheet) {
+    int k = 0;
+    for (int i = 3; i < worksheet.getPhysicalNumberOfRows(); i ++) {
+        XSSFRow row = worksheet.getRow(i);
+        if (row.getCell(3) != null)
+            if (!row.getCell(3).getStringCellValue().isEmpty()) {
+                String textOfARow = row.getCell(3).getStringCellValue();
+                if (textOfARow.length() > 0) {
+                    Person tempPerson = new Person();
+                    int length = textOfARow.indexOf('.');
+                    tempPerson.setLastName(textOfARow.substring(0, length - 2).trim());
+                    tempPerson.setFirstName(textOfARow.substring(length - 1, length).trim());
+                    tempPerson.setSecondName(textOfARow.substring(length + 1, length + 2).trim());
+                    tempPerson.setRduId(1);
+                    k++;
+                    if (personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(tempPerson.getLastName(), 1,
+                            tempPerson.getFirstName(),tempPerson.getSecondName()) == null)
+                        if (!tempPerson.getLastName().isEmpty() | !tempPerson.getFirstName().isEmpty() | !tempPerson.getSecondName().isEmpty())
+                            personRepository.save(tempPerson);
+                }
+            }
     }
+    return k;
+}
 
     private Integer parseNamesLPC(HSSFSheet worksheet) {
         int k = 0;
@@ -152,7 +180,7 @@ public class FileService {
             return 1;
     }
 
-    private void parseScheduleVRN(HSSFSheet worksheet, Integer n) {
+/*    private void parseScheduleVRN(HSSFSheet worksheet, Integer n) {
         String header = worksheet.getRow(3).getCell(3).toString();
         Integer monthNumber = monthNumber(header);
         Integer yearNumber = yearNumber(header);
@@ -181,8 +209,45 @@ public class FileService {
                 correctSchedule(monthNumber, yearNumber, i, readName, type, 1);
             }
         }
+    }*/
+private void parseScheduleVRN(XSSFSheet worksheet, Integer n) {
+    String header = worksheet.getRow(0).getCell(5).toString();
+    Integer monthNumber = monthNumber(header);
+    Integer yearNumber = yearNumber(header);
+    Integer dayCount = dayCount(monthNumber, yearNumber);
+    for (int i = 4; i < dayCount + 3; i++) {
+        for (int j = 3; j < 3+n; j ++) {
+            XSSFRow row = worksheet.getRow(j);
+            String readName = row.getCell(3).getStringCellValue();
+            String type = "0";
+            if (row.getCell(i) == null)
+                type = "0";
+            else {
+                int t = row.getCell(i).getCellType();
+                if (t == 1) {
+                    type = row.getCell(i).getStringCellValue();
+                    if (type.length() == 0)
+                        type = "0";
+                } else if (t == 0)
+                    type = String.valueOf((int) row.getCell(i).getNumericCellValue());
+                else if (t == 3) {
+                    String cellValue = row.getCell(i).getStringCellValue();
+                    if (cellValue.equals("Д")) {
+                        type = "1";
+                    } else if (cellValue.equals("Н") || cellValue.equals("4Н")) {
+                        type = "2";
+                    }
+                    else if (cellValue.equals("О"))
+                        type = "О";
+                }
+                else type="0";
+/*                    row.getCell(i).getStringCellValue();
+                    type = row.getCell(i).getStringCellValue();*/
+                }
+            correctSchedule(monthNumber, yearNumber, i, readName, type, 1);
+            }
+        }
     }
-
     private void parseScheduleLPC(HSSFSheet worksheet, Integer n) {
         String header = worksheet.getRow(2).getCell(1).toString();
         Integer monthNumber = monthNumber(header);
