@@ -25,7 +25,9 @@ import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -211,43 +213,70 @@ private Integer parseNamesVRN(XSSFSheet worksheet) {
         }
     }*/
 private void parseScheduleVRN(XSSFSheet worksheet, Integer n) {
-    String header = worksheet.getRow(0).getCell(5).toString();
+    String header="";
+    int c=0;
+    while (header.isEmpty())
+    {
+        c=worksheet.getRow(0).getFirstCellNum();
+        header = worksheet.getRow(0).getCell(c).toString();
+        c++;
+    }
     Integer monthNumber = monthNumber(header);
     Integer yearNumber = yearNumber(header);
     Integer dayCount = dayCount(monthNumber, yearNumber);
-    for (int i = 4; i < dayCount + 3; i++) {
-        for (int j = 3; j < 3+n; j ++) {
-            XSSFRow row = worksheet.getRow(j);
-            String readName = row.getCell(3).getStringCellValue();
-            String type = "0";
-            if (row.getCell(i) == null)
-                type = "0";
-            else {
-                int t = row.getCell(i).getCellType();
-                if (t == 1) {
-                    type = row.getCell(i).getStringCellValue();
-                    if (type.length() == 0)
-                        type = "0";
-                } else if (t == 0)
-                    type = String.valueOf((int) row.getCell(i).getNumericCellValue());
-                else if (t == 3) {
-                    String cellValue = row.getCell(i).getStringCellValue();
-                    if (cellValue.equals("Д")) {
-                        type = "1";
-                    } else if (cellValue.equals("Н") || cellValue.equals("4Н")) {
-                        type = "2";
-                    }
-                    else if (cellValue.equals("О"))
-                        type = "О";
-                }
-                else type="0";
+    int z=0;
+    for (Cell cell : worksheet.getRow(2)){
+        if (cell.getStringCellValue().trim().equals("Факт")){
+            z=cell.getColumnIndex();
+            break;
+        }
+    }
+    int k = 0;
+    int day = 0;
+    for (int i = 4; i < z; i++) {
+        if (worksheet.getRow(2).getCell(i).getStringCellValue().length() < 1) {
+            k++;
+        } else {
+            day++;
+            for (int j = 3; j < 3 + n; j++) {
+                XSSFRow row = worksheet.getRow(j);
+                String readName = row.getCell(3).getStringCellValue();
+                String type = "0";
+                if (row.getCell(i) == null)
+                    type = "0";
+                else {
+                    int t = row.getCell(i).getCellType();
+                    if (t == 1) {
+                        String cellValue = row.getCell(i).getStringCellValue().trim();
+                        if (cellValue.length() == 0)
+                            type = "0";
+                        else if (cellValue.equals("Д")) {
+                            type = "1";
+                        } else if (cellValue.equals("Н") || cellValue.equals("4Н")) {
+                            type = "2";
+                        } else if (cellValue.equals("О")) {
+                            type = "О";
+                        } else if (cellValue.equals("8"))
+                            type = "8";
+                    } else if (t == 0)
+                        type = String.valueOf((int) row.getCell(i).getNumericCellValue());
+                    else if (t == 3) {
+                        String cellValue = row.getCell(i).getStringCellValue();
+                        if (cellValue.equals("Д")) {
+                            type = "1";
+                        } else if (cellValue.equals("Н") || cellValue.equals("4Н")) {
+                            type = "2";
+                        } else if (cellValue.equals("О"))
+                            type = "О";
+                    } else type = "0";
 /*                    row.getCell(i).getStringCellValue();
                     type = row.getCell(i).getStringCellValue();*/
                 }
-            correctSchedule(monthNumber, yearNumber, i, readName, type, 1);
+                correctSchedule(monthNumber, yearNumber, day, readName, type, 1);
             }
         }
     }
+}
     private void parseScheduleLPC(HSSFSheet worksheet, Integer n) {
         String header = worksheet.getRow(2).getCell(1).toString();
         Integer monthNumber = monthNumber(header);
@@ -290,7 +319,7 @@ private void parseScheduleVRN(XSSFSheet worksheet, Integer n) {
         LocalDate tempDate;
         Person tempPerson;
         Schedule tempSchedule;
-        tempDate = LocalDate.of(yearNumber, monthNumber, i - 2);
+        tempDate = LocalDate.of(yearNumber, monthNumber, i);
         int tempDateId = calendarRepository.findByDay(tempDate).getId()+1;
         int length = readName.indexOf('.');
         String fn = readName.substring(length - 1, length).trim();
@@ -325,10 +354,11 @@ private void parseScheduleVRN(XSSFSheet worksheet, Integer n) {
 
     public void addYear(Integer year) {
         LocalDate start = LocalDate.of(year, 1, 1);
-        LocalDate end = LocalDate.of(year + 1, 1, 1);
+        LocalDate end = LocalDate.of(year + 1, 1, 5);
         for (LocalDate date = start; date.isBefore(end); date = date.plusDays(1)) {
             Calendar tempDate = new Calendar(date);
-            calendarRepository.save(tempDate);
+            if (calendarRepository.findByDay(date)==null)
+                calendarRepository.save(tempDate);
         }
     }
 

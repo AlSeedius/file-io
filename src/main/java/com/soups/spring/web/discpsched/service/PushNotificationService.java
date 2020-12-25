@@ -40,7 +40,7 @@ public class PushNotificationService {
         this.fcmService = fcmService;
     }
 
-    @Scheduled(cron = "0 00 22 * * *" )
+    @Scheduled(cron = "0 00 20 * * *" )
     public void sendReminder() {
         try {
             PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
@@ -56,7 +56,7 @@ public class PushNotificationService {
                             fcmService.sendMessageToToken(pushNotificationRequest);
                             //      logger.info("Отправили на" + token);
                         } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
-                            pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста. Выспитесь крепко, или предупредите начальство, что не придёте.");
+                            pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста");
                             pushNotificationRequest.setToken(token);
                             fcmService.sendMessageToToken(pushNotificationRequest);
                             //      logger.info("Отправили на" + token);
