@@ -3,6 +3,7 @@ package com.soups.spring.web.discpsched.controller;
 import java.util.Arrays;
 import java.util.List;
 
+import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationResponse;
 import com.soups.spring.web.discpsched.service.FileService;
@@ -57,12 +58,8 @@ public class FileController {
                 addInfo=addInfo.substring(0,addInfo.length()-2);
                 addInfo+=".";
             }
-            Integer nRDU = fileService.nRdu;
-            String topic;
-            if (nRDU==1)
-                topic="VoronezhAll";
-            else
-                topic="LipeckAll";
+            Rdu rdu = fileService.nRdu;
+            String topic = rdu.getTopic();
             PushNotificationRequest request = new PushNotificationRequest("Внимание!", "Был загружен новый график дежурств. Проверьте ближайшие смены!", topic);
             sendNotification(request);
         }

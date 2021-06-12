@@ -8,6 +8,7 @@ import java.util.List;
 @Repository
 public interface PersonRepository extends CrudRepository<Person, Integer> {
     List<Person> findByFirstName(String firstName);
+    List<Person> findByRduId(Integer rduId);
     //List<Person> findBySecondName(String secondName);
 
     //Person findByLastName(String lastName);

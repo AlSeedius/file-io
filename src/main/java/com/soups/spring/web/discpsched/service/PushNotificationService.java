@@ -101,15 +101,15 @@ public class PushNotificationService {
             {
                 user = new User(request.getToken(), request.getUserId());
                 userRepository.save(user);
-                fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
-                fcmService.unsubscribeUsers("LipeckAll", request.getToken());
-                fcmService.subscribeUsers("All",request.getToken());
-                fcmService.subscribeUsers(request.getTopic(),request.getToken());
+         //       fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
+         //       fcmService.unsubscribeUsers("LipeckAll", request.getToken());
+                fcmService.subscribeUsers("All", request.getToken());
+                fcmService.subscribeUsers(request.getTopic(), request.getToken());
             }
             else if (request.getUserId()!=user.getAppID()){
-                fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
-                fcmService.unsubscribeUsers("LipeckAll", request.getToken());
-                fcmService.subscribeUsers(request.getTopic(),request.getToken());
+          //      fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
+          //      fcmService.unsubscribeUsers("LipeckAll", request.getToken());
+                fcmService.subscribeUsers(request.getTopic(), request.getToken());
                 user.setAppID(request.getUserId());
                 userRepository.save(user);
             }
