@@ -1,5 +1,6 @@
 package com.soups.spring.web.discpsched.service;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.soups.spring.web.discpsched.DAO.CalendarRepository;
 import com.soups.spring.web.discpsched.DAO.ScheduleRepository;
 import com.soups.spring.web.discpsched.DAO.UserRepository;
@@ -13,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import sun.awt.CausedFocusEvent;
 
+import javax.validation.constraints.Null;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -71,14 +74,6 @@ public class PushNotificationService {
             }
         }
     }
-
- /*   public void sendPushNotification(PushNotificationRequest request) {
-        try {
-            fcmService.sendMessage(getSamplePayloadData(), request);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error(e.getMessage());
-        }
-    }*/
 
     public void sendPushNotificationWithoutData(PushNotificationRequest request) {
         try {
