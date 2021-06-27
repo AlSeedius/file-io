@@ -9,8 +9,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -43,7 +45,37 @@ public class ScheduleService {
             return list.get(0);
         }
     }
-
+    public Callback8 callback8(String  personId, String date) {
+        Callback8 cb = new Callback8();
+        int j=0, k=0, n=0, zz=0, t=1;
+        int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId() + 1;
+        List<Schedule> scheduleList = scheduleRepository.findByDateIdGreaterThanEqualAndPersonId(dateId, Integer.parseInt(personId));
+        if (LocalDateTime.now().getHour()>14)
+            t=2;
+        if (scheduleList.get(0).getType().equals("8"))
+            n=1;
+        for (int i = t; i < scheduleList.size(); i++) {
+            if (scheduleList.get(i).getType().equals("8") && n==0)
+                n=i+1;
+            if (scheduleList.get(i).getType().toLowerCase().equals("о"))
+                zz=i+1;
+            else if ((j=(scheduleList.get(i).getDateId() - scheduleList.get(i - 1).getDateId())) > 1 && scheduleList.get(i-1).getType().equals("8")) {
+                k = i;
+                break;
+            }
+        }
+        j--;
+        cb.setDaysOfWeekend(j);
+        cb.setDaysToWeekend(k-zz);
+        if (n!=0)
+            cb.setDateOfWork(calendarRepository.findById(scheduleList.get(n-1).getDateId()).get().getDay());
+        else
+        {
+            cb.setDateOfWork(LocalDate.of(2000,1,1));
+        }
+        return cb;
+    }
+        //List<Schedule> sc = scheduleRepository.findByDateIdAndPersonId()
     public CallbackShift callbackShift(Schedule actShift, boolean found, String personID) {
         Person person = personRepository.findById(Integer.parseInt(personID)).get();
         CallbackShift tempCallBack = new CallbackShift();
@@ -81,7 +113,10 @@ public class ScheduleService {
             if (tempPerson.getRduId() == nRDU)
                 sName += tempPerson.getLastName() + ", ";
         }
-        return sName.substring(0, sName.length() - 2);
+        if (sName.length()>0)
+            return sName.substring(0, sName.length() - 2);
+        else
+            return "0";
     }
 
     private String namesIn78(int dateId, List<String> type, Integer nRDU) {
@@ -111,9 +146,13 @@ public class ScheduleService {
         return tempCallback;
     }
 
-    public Callback10Shifts callbackCalendar(String date, String personID) {
+/*    public Callback10Shifts callbackCalendarId(String date, String personID) {
         int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId()+1;
         return getFullDayInfo(dateId, personID);
+    }*/
+    public Callback10Shifts callbackCalendarRdu(String date, String rduId) {
+        int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId()+1;
+        return getFullDayInfoRdu(dateId, rduId);
     }
 
     public List<CallbackMyWorks> callbackWorksList(String date, String personID) {
@@ -121,7 +160,7 @@ public class ScheduleService {
         List<Schedule> scheduleList = scheduleRepository.findByDateIdGreaterThanEqualAndPersonId(dateId, Integer.parseInt(personID));
         scheduleList.sort(Comparator.comparingInt(Schedule::getDateId));
         List<CallbackMyWorks> tempList = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             if (scheduleList.get(i) != null)
                 tempList.add(new CallbackMyWorks(scheduleList.get(i).getType(),
                         calendarRepository.findById(scheduleList.get(i).getDateId()).get().getDay()));
@@ -150,6 +189,26 @@ public class ScheduleService {
         List<Schedule> scheduleList = scheduleRepository.findByDateId(dateId);
         List<String> type = new ArrayList<>();
         Integer nRDU = personRepository.findById(Integer.parseInt(personID)).get().getRduId();
+        for (int i = 0; i < scheduleList.size(); i++) {
+            if (scheduleList.get(i).getType().equals("7") | scheduleList.get(i).getType().equals("8") | scheduleList.get(i).getType().equals("4")) {
+                if (!type.contains(scheduleList.get(i).getType()))
+                    type.add(scheduleList.get(i).getType());
+            }
+        }
+        if (!type.isEmpty())
+            tempCallback10shifts.setTypes(namesIn78(dateId, type, nRDU));
+        else
+            tempCallback10shifts.setTypes("0");
+        tempCallback10shifts.setShift1(namesInShift(dateId, "1", nRDU));
+        tempCallback10shifts.setShift2(namesInShift(dateId, "2", nRDU));
+        tempCallback10shifts.setDate(calendarRepository.findById(dateId).get().getDay());
+        return tempCallback10shifts;
+    }
+    private Callback10Shifts getFullDayInfoRdu(int dateId, String rduId) {
+        Callback10Shifts tempCallback10shifts = new Callback10Shifts();
+        List<Schedule> scheduleList = scheduleRepository.findByDateId(dateId);
+        List<String> type = new ArrayList<>();
+        Integer nRDU = Integer.valueOf(rduId);
         for (int i = 0; i < scheduleList.size(); i++) {
             if (scheduleList.get(i).getType().equals("7") | scheduleList.get(i).getType().equals("8") | scheduleList.get(i).getType().equals("4")) {
                 if (!type.contains(scheduleList.get(i).getType()))

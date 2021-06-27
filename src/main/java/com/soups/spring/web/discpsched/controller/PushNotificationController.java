@@ -48,4 +48,9 @@ public class PushNotificationController {
         pushNotificationService.uploadBoss(request);
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "User uploaded"), HttpStatus.OK);
     }
+    @GetMapping("/notification/test")
+    public ResponseEntity test(@RequestBody PushNotificationRequest request){
+        pushNotificationService.sendReminder();
+        return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "OK"), HttpStatus.OK);
+    }
 }

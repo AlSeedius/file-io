@@ -102,7 +102,7 @@ public class FileService {
                 }
             }
             else if (sName.equals("Лист1")){
-                for (int i=1; i<workbook.getNumberOfSheets()-1; i++){
+                for (int i=1; i<=workbook.getNumberOfSheets()-1; i++){
                     Integer n = parseNamesODUCSopr(workbook.getSheetAt(i));
                     parseScheduleODUCSopr(workbook.getSheetAt(i),n);
                 }

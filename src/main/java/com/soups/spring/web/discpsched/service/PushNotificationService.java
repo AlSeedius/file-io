@@ -11,15 +11,11 @@ import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -42,14 +38,14 @@ public class PushNotificationService {
 
     @Scheduled(cron = "0 00 20 * * *" )
     public void sendReminder() {
-        try {
-            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
-            pushNotificationRequest.setTitle("Не забудьте!");
-            List<Schedule> schedules = scheduleRepository.findByDateId(calendarRepository.findByDay(LocalDate.now().plusDays(2)).getId());
-            for (Schedule schedule : schedules) {
-                if (userRepository.findByAppID(schedule.getPersonId()).size() > 0) {
-                    String token = userRepository.findByAppID(schedule.getPersonId()).get(0).getToken();
-                    if (token.length()>0) {
+        PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
+        pushNotificationRequest.setTitle("Не забудьте!");
+        List<Schedule> schedules = scheduleRepository.findByDateId(calendarRepository.findByDay(LocalDate.now().plusDays(2)).getId());
+        for (Schedule schedule : schedules) {
+            if (userRepository.findByAppID(schedule.getPersonId()).size() > 0) {
+                String token = userRepository.findByAppID(schedule.getPersonId()).get(0).getToken();
+                try {
+                    if (token.length() > 0) {
                         if (schedule.getType().equals("1")) {
                             pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
                             pushNotificationRequest.setToken(token);
@@ -62,10 +58,17 @@ public class PushNotificationService {
                             //      logger.info("Отправили на" + token);
                         }
                     }
+                } catch (Exception e) {
+                    Throwable cause = e.getCause();
+                    if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED")) {
+                        User u = userRepository.findByToken(pushNotificationRequest.getToken());
+                        if (u != null) {
+                            userRepository.delete(u);
+                        }
+                    }
+                    logger.error(e.getMessage());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error(e.getMessage());
         }
     }
 
