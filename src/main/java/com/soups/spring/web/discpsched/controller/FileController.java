@@ -2,7 +2,6 @@ package com.soups.spring.web.discpsched.controller;
 
 import java.util.Arrays;
 import java.util.List;
-
 import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationResponse;

@@ -73,9 +73,8 @@ public class FileService {
             String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
             newMonths = new ArrayList<>();
             changesInSchedule = new ArrayList<>();
-            Path copyLocation = Paths
-                    .get(uploadDir + File.separator + path);
-            Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
+         //   Path copyLocation = Paths.get(uploadDir + File.separator + path);
+         //   Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
             startParsing(file);
         } catch (Exception e) {
             e.printStackTrace();
