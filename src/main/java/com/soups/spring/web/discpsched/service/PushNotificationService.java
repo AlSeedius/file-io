@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import sun.awt.CausedFocusEvent;
 
 import javax.validation.constraints.Null;
 import java.time.LocalDate;
@@ -46,30 +45,32 @@ public class PushNotificationService {
         List<Schedule> schedules = scheduleRepository.findByDateId(calendarRepository.findByDay(LocalDate.now().plusDays(2)).getId());
         for (Schedule schedule : schedules) {
             if (userRepository.findByAppID(schedule.getPersonId()).size() > 0) {
-                String token = userRepository.findByAppID(schedule.getPersonId()).get(0).getToken();
-                try {
-                    if (token.length() > 0) {
-                        if (schedule.getType().equals("1")) {
-                            pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
-                            pushNotificationRequest.setToken(token);
-                            fcmService.sendMessageToToken(pushNotificationRequest);
-                            //      logger.info("Отправили на" + token);
-                        } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
-                            pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста");
-                            pushNotificationRequest.setToken(token);
-                            fcmService.sendMessageToToken(pushNotificationRequest);
-                            //      logger.info("Отправили на" + token);
+                for (User user : userRepository.findByAppID(schedule.getPersonId())) {
+                    String token = user.getToken();
+                    try {
+                        if (token.length() > 0) {
+                            if (schedule.getType().equals("1")) {
+                                pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
+                                pushNotificationRequest.setToken(token);
+                                fcmService.sendMessageToToken(pushNotificationRequest);
+                                //      logger.info("Отправили на" + token);
+                            } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
+                                pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста");
+                                pushNotificationRequest.setToken(token);
+                                fcmService.sendMessageToToken(pushNotificationRequest);
+                                //      logger.info("Отправили на" + token);
+                            }
                         }
-                    }
-                } catch (Exception e) {
-                    Throwable cause = e.getCause();
-                    if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED")) {
-                        User u = userRepository.findByToken(pushNotificationRequest.getToken());
-                        if (u != null) {
-                            userRepository.delete(u);
+                    } catch (Exception e) {
+                        Throwable cause = e.getCause();
+                        if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED")) {
+                            User u = userRepository.findByToken(pushNotificationRequest.getToken());
+                            if (u != null) {
+                                userRepository.delete(u);
+                            }
                         }
+                        logger.error(e.getMessage());
                     }
-                    logger.error(e.getMessage());
                 }
             }
         }
