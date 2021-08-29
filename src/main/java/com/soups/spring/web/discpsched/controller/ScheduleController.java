@@ -1,9 +1,6 @@
 package com.soups.spring.web.discpsched.controller;
 
-import com.soups.spring.web.discpsched.entitie.Callback10Shifts;
-import com.soups.spring.web.discpsched.entitie.Callback8;
-import com.soups.spring.web.discpsched.entitie.CallbackMyWorks;
-import com.soups.spring.web.discpsched.entitie.CallbackShift;
+import com.soups.spring.web.discpsched.entitie.*;
 import com.soups.spring.web.discpsched.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +19,7 @@ public class ScheduleController {
     }*/
   @GetMapping("/version")
   public String getVersion() {
-      return "0.8";
+      return "0.83";
   }
   @GetMapping("/10shifts/{date}/{personID}")
   public List<Callback10Shifts> scheduleList(@PathVariable String date, @PathVariable String personID){
@@ -52,4 +49,7 @@ public class ScheduleController {
     public List<CallbackMyWorks> monthworkList(@PathVariable String date, @PathVariable String personID){
         return shiftService.callbackMonthList(date, personID);
     }
+
+    @GetMapping("/month/{rduId}")
+    //public Iterable<Person> rduSchedList(@PathVariable Integer rduId) {return personService.rduPersons(rduId);}
 }

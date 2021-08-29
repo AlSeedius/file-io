@@ -104,6 +104,8 @@ public class ScheduleService {
         return tempCallBack;
     }
 
+  //  public
+
     private String namesInShift(int dateId, String type, int nRDU) {
         List<Schedule> thisDayList = scheduleRepository.findByDateIdAndType(dateId, type);
         String sName = "";
