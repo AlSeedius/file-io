@@ -2,13 +2,16 @@ package com.soups.spring.web.discpsched.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.soups.spring.web.discpsched.DAO.CalendarRepository;
+import com.soups.spring.web.discpsched.DAO.RduRepository;
 import com.soups.spring.web.discpsched.DAO.ScheduleRepository;
 import com.soups.spring.web.discpsched.DAO.UserRepository;
+import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.entitie.Schedule;
 import com.soups.spring.web.discpsched.entitie.User;
 import com.soups.spring.web.discpsched.firebase.FCMService;
 import com.soups.spring.web.discpsched.model.PushIDRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
+import com.soups.spring.web.discpsched.model.UpdateTokenRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.Null;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -30,6 +34,8 @@ public class PushNotificationService {
     ScheduleRepository scheduleRepository;
     @Autowired
     CalendarRepository calendarRepository;
+    @Autowired
+    RduRepository rduRepository;
 
     private Logger logger = LoggerFactory.getLogger(PushNotificationService.class);
     private FCMService fcmService;
@@ -93,6 +99,13 @@ public class PushNotificationService {
         }
     }
 
+    private List<String> allTopics(){
+        List<String> result = new ArrayList<>();
+        for (Rdu r : rduRepository.findAll())
+            result.add(r.getTopic());
+        return result;
+    }
+
     public void uploadId(PushIDRequest request){
         try{
             User user = userRepository.findByToken(request.getToken());
@@ -100,14 +113,15 @@ public class PushNotificationService {
             {
                 user = new User(request.getToken(), request.getUserId());
                 userRepository.save(user);
-         //       fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
-         //       fcmService.unsubscribeUsers("LipeckAll", request.getToken());
+                for (String s : allTopics())
+                    fcmService.unsubscribeUsers(s, request.getToken());
                 fcmService.subscribeUsers("All", request.getToken());
                 fcmService.subscribeUsers(request.getTopic(), request.getToken());
             }
             else if (request.getUserId()!=user.getAppID()){
-          //      fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
-          //      fcmService.unsubscribeUsers("LipeckAll", request.getToken());
+                for (String s : allTopics())
+                    fcmService.unsubscribeUsers(s, request.getToken());
+                fcmService.subscribeUsers("All", request.getToken());
                 fcmService.subscribeUsers(request.getTopic(), request.getToken());
                 user.setAppID(request.getUserId());
                 userRepository.save(user);
@@ -116,14 +130,25 @@ public class PushNotificationService {
             logger.error(e.getMessage());
         }
     }
+
+    public void updateToken(UpdateTokenRequest request){
+        try{
+            User user = userRepository.findByToken(request.getOldToken());
+            user.setToken(request.getNewToken());
+            userRepository.save(user);
+        }catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+    }
+
     public void uploadBoss(PushIDRequest request) {
         try {
             User user = userRepository.findByToken(request.getToken());
             if (user != null) {
                 userRepository.delete(user);
             }
-            fcmService.unsubscribeUsers("VoronezhAll", request.getToken());
-            fcmService.unsubscribeUsers("LipeckAll", request.getToken());
+            for (String s : allTopics())
+                fcmService.unsubscribeUsers(s, request.getToken());
             fcmService.subscribeUsers("All", request.getToken());
             fcmService.subscribeUsers(request.getTopic(), request.getToken());
         } catch (Exception e) {

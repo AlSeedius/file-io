@@ -5,7 +5,6 @@ import com.soups.spring.web.discpsched.DAO.PersonRepository;
 import com.soups.spring.web.discpsched.DAO.ScheduleRepository;
 import com.soups.spring.web.discpsched.entitie.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -45,37 +44,34 @@ public class ScheduleService {
             return list.get(0);
         }
     }
-    public Callback8 callback8(String  personId, String date) {
+    public Callback8 callback8(Integer personId, String date) {
         Callback8 cb = new Callback8();
-        int j=0, k=0, n=0, zz=0, t=1;
+        int n=0, t=0;
         int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId() + 1;
-        List<Schedule> scheduleList = scheduleRepository.findByDateIdGreaterThanEqualAndPersonId(dateId, Integer.parseInt(personId));
+        List<Schedule> scheduleList = scheduleRepository.findByDateIdGreaterThanEqualAndPersonId(dateId, personId);
         if (LocalDateTime.now().getHour()>14)
-            t=2;
-        if (scheduleList.get(0).getType().equals("8"))
-            n=1;
+            t=1;
         for (int i = t; i < scheduleList.size(); i++) {
-            if (scheduleList.get(i).getType().equals("8") && n==0)
-                n=i+1;
-            if (scheduleList.get(i).getType().toLowerCase().equals("о"))
-                zz=i+1;
-            else if ((j=(scheduleList.get(i).getDateId() - scheduleList.get(i - 1).getDateId())) > 1 && scheduleList.get(i-1).getType().equals("8")) {
-                k = i;
+            if (scheduleList.get(i).getType().equals("8")){
+                n=i;
                 break;
             }
         }
-        j--;
-        cb.setDaysOfWeekend(j);
-        cb.setDaysToWeekend(k-zz);
-        if (n!=0)
-            cb.setDateOfWork(calendarRepository.findById(scheduleList.get(n-1).getDateId()).get().getDay());
+        if (n!=0){
+            dateId = scheduleList.get(n).getDateId();
+            List<String> typeList = new ArrayList<String>();
+            typeList.add("8");
+            Person me = personRepository.findById(personId).get();
+            cb.setDateOfWork(calendarRepository.findById(dateId).get().getDay());
+            cb.setColleagues(colleagues78List(dateId, typeList, me.getRduId(), me.getLastName()));
+        }
         else
         {
             cb.setDateOfWork(LocalDate.of(2000,1,1));
         }
         return cb;
     }
-        //List<Schedule> sc = scheduleRepository.findByDateIdAndPersonId()
+
     public CallbackShift callbackShift(Schedule actShift, boolean found, String personID) {
         Person person = personRepository.findById(Integer.parseInt(personID)).get();
         CallbackShift tempCallBack = new CallbackShift();
@@ -104,7 +100,27 @@ public class ScheduleService {
         return tempCallBack;
     }
 
-  //  public
+    public List<CallbackRDUList> RDUList(int nRDU, String date, int nCols){
+        int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId() + 1;
+        List<CallbackRDUList> callback = new ArrayList<>();
+        for (Person p : personRepository.findByRduId(nRDU)){
+            CallbackRDUList cb = new CallbackRDUList(nCols);
+            cb.setName(p.getLastName()+" "+p.getFirstName()+". "+p.getSecondName()+".");
+            List<Schedule> schedList =  scheduleRepository.findByDateIdGreaterThanEqualAndDateIdLessThanEqualAndPersonId(dateId, dateId+nCols-1, p.getId());
+            for (int i=0; i<nCols; i++){
+                for (Schedule s : schedList){
+                    if (s.getDateId()==(i+dateId)){
+                        cb.addTypes(i, s.getType());
+                        break;
+                    }
+                }
+                if (cb.getTypes()[i]==null)
+                    cb.addTypes(i, "0");
+            }
+            callback.add(cb);
+        }
+        return callback;
+    }
 
     private String namesInShift(int dateId, String type, int nRDU) {
         List<Schedule> thisDayList = scheduleRepository.findByDateIdAndType(dateId, type);
@@ -138,6 +154,23 @@ public class ScheduleService {
             return "0";
     }
 
+    private String colleagues78List(int dateId, List<String> type, Integer nRDU, String myLastname) {
+        String tempString = "";
+        Person tempPerson;
+        for (String t : type) {
+            List<Schedule> thisDayList = scheduleRepository.findByDateIdAndType(dateId, t);
+            for (int i = 0; i < thisDayList.size(); i++) {
+                tempPerson = personRepository.findById(thisDayList.get(i).getPersonId()).get();
+                if (tempPerson.getRduId() == nRDU && tempPerson.getLastName()!=myLastname)
+                    tempString += tempPerson.getLastName() + " " + tempPerson.getFirstName() + ". "+ tempPerson.getSecondName()+"., ";
+            }
+        }
+        if (tempString.length()>0)
+            return tempString.substring(0, tempString.length() - 2);
+        else
+            return "0";
+    }
+
     public List<Callback10Shifts> callback10ShiftsList(String date, String personID) {
         int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId()+1;
         List<Callback10Shifts> tempCallback = new ArrayList<>();
@@ -148,10 +181,6 @@ public class ScheduleService {
         return tempCallback;
     }
 
-/*    public Callback10Shifts callbackCalendarId(String date, String personID) {
-        int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId()+1;
-        return getFullDayInfo(dateId, personID);
-    }*/
     public Callback10Shifts callbackCalendarRdu(String date, String rduId) {
         int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId()+1;
         return getFullDayInfoRdu(dateId, rduId);
@@ -173,7 +202,6 @@ public class ScheduleService {
         LocalDate day = LocalDate.parse(date);
         day.getYear();
         LocalDate day1 = LocalDate.of(day.getYear(),day.getMonth(),1);
-        LocalDate day2 = LocalDate.of(day.getYear(),day.getMonth(), day.lengthOfMonth());
         int dateId = calendarRepository.findByDay(day1).getId()+1;
         List<Schedule> scheduleList = scheduleRepository.findByDateIdGreaterThanEqualAndDateIdLessThanEqualAndPersonId(dateId, dateId+day.lengthOfMonth()-1, Integer.parseInt(personID));
         scheduleList.sort(Comparator.comparingInt(Schedule::getDateId));

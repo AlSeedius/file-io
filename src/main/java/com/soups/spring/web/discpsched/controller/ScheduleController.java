@@ -19,7 +19,7 @@ public class ScheduleController {
     }*/
   @GetMapping("/version")
   public String getVersion() {
-      return "0.83";
+      return "0.85";
   }
   @GetMapping("/10shifts/{date}/{personID}")
   public List<Callback10Shifts> scheduleList(@PathVariable String date, @PathVariable String personID){
@@ -38,7 +38,7 @@ public class ScheduleController {
         return shiftService.callbackShift(shiftService.oneSchedule(date, personID), shiftService.isFound(), personID);
     }
     @GetMapping("/one8/{date}/{personID}")
-    public Callback8 one8(@PathVariable String date, @PathVariable String personID) {
+    public Callback8 one8(@PathVariable String date, @PathVariable Integer personID) {
         return shiftService.callback8(personID, date);
     }
     @GetMapping("/myworks/{date}/{personID}")
@@ -50,6 +50,7 @@ public class ScheduleController {
         return shiftService.callbackMonthList(date, personID);
     }
 
-    @GetMapping("/month/{rduId}")
-    //public Iterable<Person> rduSchedList(@PathVariable Integer rduId) {return personService.rduPersons(rduId);}
+    @GetMapping("/list/{rduId}/{date}/{nCols}")
+    public Iterable<CallbackRDUList> rduSchedList(@PathVariable Integer rduId, @PathVariable String date, @PathVariable Integer nCols) {
+        return shiftService.RDUList(rduId, date, nCols);}
 }

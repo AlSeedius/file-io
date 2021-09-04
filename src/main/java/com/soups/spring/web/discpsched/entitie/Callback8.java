@@ -1,36 +1,26 @@
 package com.soups.spring.web.discpsched.entitie;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 
 public class Callback8 {
 
-    private Integer daysToWeekend;
-    private Integer daysOfWeekend;
     private LocalDate dateOfWork;
+    private String colleagues;
 
     public Callback8(){}
 
-    public Callback8(Integer daysToWeekend, Integer daysOfWeekend, LocalDate dateOfWork) {
-        this.daysToWeekend = daysToWeekend;
-        this.daysOfWeekend = daysOfWeekend;
+    public Callback8(LocalDate dateOfWork, String colleagues) {
         this.dateOfWork = dateOfWork;
+        this.colleagues = colleagues;
     }
 
-    public Integer getDaysToWeekend() {
-        return daysToWeekend;
+    public String getColleagues() {
+        return colleagues;
     }
 
-    public void setDaysToWeekend(Integer daysToWeekend) {
-        this.daysToWeekend = daysToWeekend;
-    }
-
-    public Integer getDaysOfWeekend() {
-        return daysOfWeekend;
-    }
-
-    public void setDaysOfWeekend(Integer daysOfWeekend) {
-        this.daysOfWeekend = daysOfWeekend;
+    public void setColleagues(String colleagues) {
+        this.colleagues = colleagues;
     }
 
     public LocalDate getDateOfWork() {

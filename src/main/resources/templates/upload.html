@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<link rel="shortcut icon" type="image/png" th:href="@{favicon.png}"/>
 <body>
 
 <h1>Загрузка формы графика дежурств</h1>
@@ -10,7 +11,7 @@
   <input type="file" name="file"/> <br/><br/>
   <button type="submit">Загрузить!</button>
 </form>
-
+<h4>Для загрузки графика из РСП необходимо экспортировать отчет стандартной формы</h4>
 <hr/>
 
 <div th:if="${message}">

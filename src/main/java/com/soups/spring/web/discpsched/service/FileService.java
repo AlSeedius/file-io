@@ -1,13 +1,7 @@
 package com.soups.spring.web.discpsched.service;
 
 
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,16 +23,13 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import static java.nio.charset.StandardCharsets.*;
 
 @Service
 public class FileService {
@@ -70,7 +61,7 @@ public class FileService {
 
     public void uploadFile(MultipartFile file) {
         try {
-            String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
+        //    String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
             newMonths = new ArrayList<>();
             changesInSchedule = new ArrayList<>();
          //   Path copyLocation = Paths.get(uploadDir + File.separator + path);

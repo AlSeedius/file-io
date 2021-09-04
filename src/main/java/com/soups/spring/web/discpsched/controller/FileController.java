@@ -29,6 +29,11 @@ public class FileController {
         return "upload";
     }
 
+    @GetMapping("/changelog")
+    public String index_() {
+        return "changelog";
+    }
+
     @GetMapping("/year/{year}")
     public String addYear(@PathVariable String year) {
         fileService.addYear(Integer.parseInt(year));
