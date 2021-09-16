@@ -7,10 +7,7 @@ import com.soups.spring.web.discpsched.model.UpdateTokenRequest;
 import com.soups.spring.web.discpsched.service.PushNotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class PushNotificationController {
@@ -52,6 +49,12 @@ public class PushNotificationController {
     @GetMapping("/notification/test")
     public ResponseEntity test(@RequestBody PushNotificationRequest request){
         pushNotificationService.sendReminder();
+        return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "OK"), HttpStatus.OK);
+    }
+
+    @GetMapping("/notification/usertest/{userId}")
+    public ResponseEntity usertest(@PathVariable Integer userId){
+        pushNotificationService.testUser(userId);
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "OK"), HttpStatus.OK);
     }
 

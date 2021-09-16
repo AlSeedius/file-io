@@ -46,12 +46,12 @@ public class PushNotificationService {
 
     @Scheduled(cron = "0 00 20 * * *" )
     public void sendReminder() {
-        PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
-        pushNotificationRequest.setTitle("Не забудьте!");
         List<Schedule> schedules = scheduleRepository.findByDateId(calendarRepository.findByDay(LocalDate.now().plusDays(2)).getId());
         for (Schedule schedule : schedules) {
             if (userRepository.findByAppID(schedule.getPersonId()).size() > 0) {
                 for (User user : userRepository.findByAppID(schedule.getPersonId())) {
+                    PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
+                    pushNotificationRequest.setTitle("Не забудьте!");
                     String token = user.getToken();
                     try {
                         if (token.length() > 0) {
@@ -138,6 +138,27 @@ public class PushNotificationService {
             userRepository.save(user);
         }catch (Exception e) {
             logger.error(e.getMessage());
+        }
+    }
+
+    public void testUser(Integer userId) {
+        for (User u : userRepository.findByAppID(userId)) {
+            PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
+            try {
+                pushNotificationRequest.setTitle("Тест");
+                pushNotificationRequest.setMessage("Тест");
+                pushNotificationRequest.setToken(u.getToken());
+                fcmService.sendMessageToToken(pushNotificationRequest);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED")) {
+                    User user = userRepository.findByToken(pushNotificationRequest.getToken());
+                    if (user != null) {
+                        userRepository.delete(user);
+                    }
+                }
+                logger.error(e.getMessage());
+            }
         }
     }
 

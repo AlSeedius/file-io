@@ -46,18 +46,18 @@ public class ScheduleService {
     }
     public Callback8 callback8(Integer personId, String date) {
         Callback8 cb = new Callback8();
-        int n=0, t=0;
+        int n=-1;
         int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId() + 1;
         List<Schedule> scheduleList = scheduleRepository.findByDateIdGreaterThanEqualAndPersonId(dateId, personId);
-        if (LocalDateTime.now().getHour()>14)
-            t=1;
-        for (int i = t; i < scheduleList.size(); i++) {
+        for (int i = 0; i < scheduleList.size(); i++) {
             if (scheduleList.get(i).getType().equals("8")){
-                n=i;
-                break;
+                if (!(scheduleList.get(i).getDateId()==dateId && LocalDateTime.now().getHour()>14)) {
+                    n = i;
+                    break;
+                }
             }
         }
-        if (n!=0){
+        if (n!=-1){
             dateId = scheduleList.get(n).getDateId();
             List<String> typeList = new ArrayList<String>();
             typeList.add("8");

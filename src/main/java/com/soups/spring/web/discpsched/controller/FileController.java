@@ -50,7 +50,7 @@ public class FileController {
             if (!fileService.changesInSchedule.isEmpty()) {
                 addInfo+= "\nВнесены изменения:\n ";
                 for (List<String> list : fileService.changesInSchedule)
-                    addInfo += "Месяц: " + list.get(0) + ", Диспетчер: " + list.get(1) + "; \n ";
+                    addInfo += "Месяц: " + list.get(0) + ", " + list.get(1) + "; \n ";
                 addInfo=addInfo.substring(0,addInfo.length()-2);
                 addInfo+=". ";
             }
