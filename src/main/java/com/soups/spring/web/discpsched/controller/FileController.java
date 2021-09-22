@@ -41,9 +41,14 @@ public class FileController {
     }
 
     @PostMapping("/uploadFile")
-    public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+    public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes, @RequestParam("rduType") String type) {
         String addInfo="! ";
-        fileService.uploadFile(file);
+        int t=0;
+        if (type.equals("Воронежское РДУ"))
+            t=1;
+        else if (type.equals("Липецкое РДУ"))
+            t=2;
+        fileService.uploadFile(file, t);
         if (fileService.changesInSchedule.isEmpty() & fileService.newMonths.isEmpty())
             addInfo=", но не было обнаружено никаких изменений по сравнению с предыдущим графиком.";
         else {
@@ -76,7 +81,7 @@ public class FileController {
         pushNotificationService.sendPushNotificationWithoutData(request);
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);}
 
-    @PostMapping("/uploadFiles")
+/*    @PostMapping("/uploadFiles")
     public String uploadFiles(@RequestParam("files") MultipartFile[] files, RedirectAttributes redirectAttributes) {
 
         Arrays.asList(files)
@@ -87,5 +92,5 @@ public class FileController {
             "You successfully uploaded all files!");
 
         return "redirect:/";
-    }
+    }*/
 }

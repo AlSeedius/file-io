@@ -9,9 +9,16 @@
 
 <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
   <input type="file" name="file"/> <br/><br/>
+  <select type="rduType" name="rduType" >
+    <option selected>Выберите РДУ (актуально только при загрузке графика из РСП)</option>
+    <option>Воронежское РДУ</option>
+    <option>Липецкое РДУ</option>
+  </select>
+  <h5></h5>
   <button type="submit">Загрузить!</button>
 </form>
 <h4>Для загрузки графика из РСП необходимо экспортировать отчет стандартной формы</h4>
+<h4><a href="http://dispscheduler.ru/changelog">Последние изменения в актуальной версии</a> </h4>
 <hr/>
 
 <div th:if="${message}">

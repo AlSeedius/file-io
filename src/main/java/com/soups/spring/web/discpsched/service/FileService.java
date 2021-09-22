@@ -59,14 +59,14 @@ public class FileService {
     @Value("${app.upload.dir:${user.home}}")
     public String uploadDir;
 
-    public void uploadFile(MultipartFile file) {
+    public void uploadFile(MultipartFile file, Integer type) {
         try {
         //    String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
             newMonths = new ArrayList<>();
             changesInSchedule = new ArrayList<>();
          //   Path copyLocation = Paths.get(uploadDir + File.separator + path);
          //   Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
-            startParsing(file);
+            startParsing(file, type);
         } catch (Exception e) {
             e.printStackTrace();
             throw new FileStorageException("Could not store file " + file.getOriginalFilename()
@@ -74,7 +74,7 @@ public class FileService {
         }
     }
 
-    private void startParsing(MultipartFile reapExcelDataFile) throws IOException {
+    private void startParsing(MultipartFile reapExcelDataFile, Integer type) throws IOException {
         String fileName = reapExcelDataFile.getOriginalFilename();
         String expansion = fileName.substring(fileName.indexOf("."));
         if (expansion.equals(".xlsx")) {
@@ -87,8 +87,8 @@ public class FileService {
                 }
             }
             else {
-                Integer n = parseNamesVRN(workbook.getSheetAt(0));
-                parseScheduleVRN(workbook.getSheetAt(0), n);
+                Integer n = parseNamesRSP(workbook.getSheetAt(0), type);
+                parseScheduleRSP(workbook.getSheetAt(0), n, type);
             }
         }
         else {
@@ -114,7 +114,7 @@ public class FileService {
         }
     }
 
-    private Integer parseNamesVRN(XSSFSheet worksheet) {
+    private Integer parseNamesRSP(XSSFSheet worksheet, Integer type) {
         int k = 0;
         for (int i = 3; i < worksheet.getPhysicalNumberOfRows(); i++) {
             XSSFRow row = worksheet.getRow(i);
@@ -127,9 +127,9 @@ public class FileService {
                         tempPerson.setLastName(textOfARow.substring(0, length - 2).trim());
                         tempPerson.setFirstName(textOfARow.substring(length - 1, length).trim());
                         tempPerson.setSecondName(textOfARow.substring(length + 1, length + 2).trim());
-                        tempPerson.setRduId(1);
+                        tempPerson.setRduId(type);
                         k++;
-                        if (personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(tempPerson.getLastName(), 1,
+                        if (personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(tempPerson.getLastName(), type,
                                 tempPerson.getFirstName(), tempPerson.getSecondName()) == null)
                             if (!tempPerson.getLastName().isEmpty() | !tempPerson.getFirstName().isEmpty() | !tempPerson.getSecondName().isEmpty())
                                 personRepository.save(tempPerson);
@@ -258,7 +258,7 @@ public class FileService {
         return k;
     }
 
-    private void parseScheduleVRN(XSSFSheet worksheet, Integer n) {
+    private void parseScheduleRSP(XSSFSheet worksheet, Integer n, Integer RDUn) {
         String header = "";
         int c = 0;
         while (header.isEmpty()) {
@@ -295,21 +295,21 @@ public class FileService {
                             String cellValue = row.getCell(i).getStringCellValue().trim();
                             if (cellValue.length() == 0)
                                 type = "0";
-                            else if (cellValue.equals("Д")) {
+                            else if (cellValue.startsWith("Д")) {
                                 type = "1";
-                            } else if (cellValue.equals("Н") || cellValue.equals("4Н")) {
+                            } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н")) {
                                 type = "2";
                             } else if (cellValue.equals("О")) {
                                 type = "О";
-                            } else if (cellValue.equals("8"))
+                            } else if (cellValue.equals("8")||cellValue.equals("04:00"))
                                 type = "8";
                         } else if (t == 0)
                             type = String.valueOf((int) row.getCell(i).getNumericCellValue());
                         else if (t == 3) {
                             String cellValue = row.getCell(i).getStringCellValue();
-                            if (cellValue.equals("Д")) {
+                            if (cellValue.startsWith("Д")) {
                                 type = "1";
-                            } else if (cellValue.equals("Н") || cellValue.equals("4Н")) {
+                            } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н")) {
                                 type = "2";
                             } else if (cellValue.equals("О"))
                                 type = "О";
@@ -317,16 +317,16 @@ public class FileService {
 /*                    row.getCell(i).getStringCellValue();
                     type = row.getCell(i).getStringCellValue();*/
                     }
-                    correctSchedule(monthNumber, yearNumber, day, readName, type, 1);
+                    correctSchedule(monthNumber, yearNumber, day, readName, type, RDUn);
                 }
             }
         }
     }
-    private void parseScheduleODUCDiop(XSSFSheet worksheet, Integer n) {
+    private void parseScheduleODUCDiop(XSSFSheet worksheet, int n) {
         String header = worksheet.getRow(4).getCell(14).toString();
-        Integer monthNumber = monthNumber(header);
-        Integer yearNumber = yearNumber(header);
-        Integer dayCount = dayCount(monthNumber, yearNumber);
+        int monthNumber = monthNumber(header);
+        int yearNumber = yearNumber(header);
+        int dayCount = dayCount(monthNumber, yearNumber);
         for (int i = 9; i < dayCount + 9; i++) {
             for (int j = 9; j < 9 + n; j++) {
                 XSSFRow row = worksheet.getRow(j);
@@ -357,11 +357,11 @@ public class FileService {
             }
         }
     }
-    private void parseScheduleODUCDiop(HSSFSheet worksheet, Integer n) {
+    private void parseScheduleODUCDiop(HSSFSheet worksheet, int n) {
         String header = worksheet.getRow(4).getCell(14).toString();
-        Integer monthNumber = monthNumber(header);
-        Integer yearNumber = yearNumber(header);
-        Integer dayCount = dayCount(monthNumber, yearNumber);
+        int monthNumber = monthNumber(header);
+        int yearNumber = yearNumber(header);
+        int dayCount = dayCount(monthNumber, yearNumber);
         for (int i = 9; i < dayCount + 9; i++) {
             for (int j = 9; j < 9 + n; j++) {
                 HSSFRow row = worksheet.getRow(j);
@@ -392,12 +392,12 @@ public class FileService {
             }
         }
     }
-    private void parseScheduleODUCSopr(HSSFSheet worksheet, Integer n) {
+    private void parseScheduleODUCSopr(HSSFSheet worksheet, int n) {
         HSSFRow headerRow = worksheet.getRow(21);
         String header = headerRow.getCell(12).toString()+" "+headerRow.getCell(13).toString()+" "+headerRow.getCell(16).toString();
-        Integer monthNumber = monthNumber(header);
-        Integer yearNumber = yearNumber(header);
-        Integer dayCount = dayCount(monthNumber, yearNumber);
+        int monthNumber = monthNumber(header);
+        int yearNumber = yearNumber(header);
+        int dayCount = dayCount(monthNumber, yearNumber);
         for (int i = 3; i < dayCount + 3; i++) {
             for (int j = 24; j < 24 + n; j++) {
                 HSSFRow row = worksheet.getRow(j);
@@ -428,11 +428,11 @@ public class FileService {
             }
         }
     }
-    private void parseScheduleLPC(HSSFSheet worksheet, Integer n) {
+    private void parseScheduleLPC(HSSFSheet worksheet, int n) {
         String header = worksheet.getRow(2).getCell(1).toString();
-        Integer monthNumber = monthNumber(header);
-        Integer yearNumber = yearNumber(header);
-        Integer dayCount = dayCount(monthNumber, yearNumber);
+        int monthNumber = monthNumber(header);
+        int yearNumber = yearNumber(header);
+        int dayCount = dayCount(monthNumber, yearNumber);
         for (int i = 3; i < dayCount + 3; i++) {
             for (int j = 5; j < 5 + 2 * n; j = j + 2) {
                 HSSFRow row = worksheet.getRow(j);
@@ -484,16 +484,16 @@ public class FileService {
         nRdu=rduRepository.findById(i2).get();
         if (!scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).isEmpty()) {
             tempSchedule = scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0);
-            if (type != "0" & !type.equals("о") & !type.equals(tempSchedule.getType())) {
+            if (!type.equals("0") & !type.equals("о") & !type.equals(tempSchedule.getType())) {
                 tempSchedule.setType(type);
                 ArrayList<String> changes = new ArrayList<>();
                 changes.add(monthNumber.toString());
                 changes.add(tempPerson.getLastName());
                 if (!changesInSchedule.contains(changes))
                     changesInSchedule.add(changes);
-            } else if (type == "0" | (type.equals("0")))
+            } else if (type.equals("0") | (type.equals("0")))
                 scheduleRepository.delete(scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0));
-        } else if (type != "0" & !(type.equals("о"))) {
+        } else if (!type.equals("0") & !(type.equals("о"))) {
             if (!newMonths.contains(monthNumber))
                 newMonths.add(monthNumber);
             tempSchedule = new Schedule(tempPerson.getId(), tempDateId, type);
