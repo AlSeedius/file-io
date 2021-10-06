@@ -290,8 +290,8 @@ public class FileService {
                     if (row.getCell(i) == null)
                         type = "0";
                     else {
-                        int t = row.getCell(i).getCellType();
-                        if (t == 1) {
+/*                        int t = row.getCell(i).getCellType();
+                        if (t == 1) {*/
                             String cellValue = row.getCell(i).getStringCellValue().trim();
                             if (cellValue.length() == 0)
                                 type = "0";
@@ -301,9 +301,16 @@ public class FileService {
                                 type = "2";
                             } else if (cellValue.equals("О")) {
                                 type = "О";
-                            } else if (cellValue.equals("8")||cellValue.equals("04:00"))
+                            } else if (cellValue.equals("8")) {
                                 type = "8";
-                        } else if (t == 0)
+                            } else if (cellValue.equals("04:00")) {
+                                type = "4";
+                            } else if (cellValue.equals("К")){
+                                type = "К";
+                            } else if (cellValue.equals("Б")){
+                                type = "Б";
+                            }
+                       /* } else if (t == 0)
                             type = String.valueOf((int) row.getCell(i).getNumericCellValue());
                         else if (t == 3) {
                             String cellValue = row.getCell(i).getStringCellValue();
@@ -313,7 +320,7 @@ public class FileService {
                                 type = "2";
                             } else if (cellValue.equals("О"))
                                 type = "О";
-                        } else type = "0";
+                        } else type = "0";*/
 /*                    row.getCell(i).getStringCellValue();
                     type = row.getCell(i).getStringCellValue();*/
                     }
@@ -345,8 +352,10 @@ public class FileService {
                             break;
                         case("8"):
                         case("7"):
-                        case("4"):
                             type="8";
+                            break;
+                        case("4"):
+                            type="4";
                             break;
                         case("О"):
                             type="О";

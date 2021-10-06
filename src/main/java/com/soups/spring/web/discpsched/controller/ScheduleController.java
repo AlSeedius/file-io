@@ -19,7 +19,7 @@ public class ScheduleController {
     }*/
   @GetMapping("/version")
   public String getVersion() {
-      return "0.85";
+      return "0.86";
   }
   @GetMapping("/10shifts/{date}/{personID}")
   public List<Callback10Shifts> scheduleList(@PathVariable String date, @PathVariable String personID){
