@@ -268,7 +268,6 @@ public class FileService {
         }
         Integer monthNumber = monthNumber(header);
         Integer yearNumber = yearNumber(header);
-        Integer dayCount = dayCount(monthNumber, yearNumber);
         int z = 0;
         for (Cell cell : worksheet.getRow(2)) {
             if (cell.getStringCellValue().trim().equals("Факт")) {
@@ -292,7 +291,7 @@ public class FileService {
                     else {
 /*                        int t = row.getCell(i).getCellType();
                         if (t == 1) {*/
-                            String cellValue = row.getCell(i).getStringCellValue().trim();
+                            String cellValue = row.getCell(i).toString().trim();
                             if (cellValue.length() == 0)
                                 type = "0";
                             else if (cellValue.startsWith("Д")) {
