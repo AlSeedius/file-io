@@ -300,7 +300,7 @@ public class FileService {
                                 type = "2";
                             } else if (cellValue.equals("О")) {
                                 type = "О";
-                            } else if (cellValue.equals("8")) {
+                            } else if (cellValue.equals("8")||cellValue.equals("8.0")) {
                                 type = "8";
                             } else if (cellValue.equals("04:00")) {
                                 type = "4";

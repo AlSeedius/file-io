@@ -1,24 +1,31 @@
 package com.soups.spring.web.discpsched.service;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.soups.spring.web.discpsched.DAO.CalendarRepository;
-import com.soups.spring.web.discpsched.DAO.RduRepository;
-import com.soups.spring.web.discpsched.DAO.ScheduleRepository;
-import com.soups.spring.web.discpsched.DAO.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.soups.spring.web.discpsched.DAO.*;
 import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.entitie.Schedule;
 import com.soups.spring.web.discpsched.entitie.User;
 import com.soups.spring.web.discpsched.firebase.FCMService;
+import com.soups.spring.web.discpsched.hms.HMSService;
+import com.soups.spring.web.discpsched.hms.Token;
+import com.soups.spring.web.discpsched.hms.pushes.TokenRootNotification;
+import com.soups.spring.web.discpsched.hms.pushes.TopicRootNotification;
+import com.soups.spring.web.discpsched.hms.pushes.TopicSubscriber;
 import com.soups.spring.web.discpsched.model.PushIDRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import com.soups.spring.web.discpsched.model.UpdateTokenRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
-import javax.validation.constraints.Null;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +36,16 @@ public class PushNotificationService {
 
     @Autowired
     UserRepository userRepository;
-
     @Autowired
     ScheduleRepository scheduleRepository;
     @Autowired
     CalendarRepository calendarRepository;
     @Autowired
     RduRepository rduRepository;
+    @Autowired
+    PersonRepository personRepository;
+    @Autowired
+    HMSService hmsService;
 
     private Logger logger = LoggerFactory.getLogger(PushNotificationService.class);
     private FCMService fcmService;
@@ -47,6 +57,7 @@ public class PushNotificationService {
     @Scheduled(cron = "0 00 20 * * *" )
     public void sendReminder() {
         List<Schedule> schedules = scheduleRepository.findByDateId(calendarRepository.findByDay(LocalDate.now().plusDays(2)).getId());
+        String authToken = hmsService.getHMSAccessToken().getAccess_token();
         for (Schedule schedule : schedules) {
             if (userRepository.findByAppID(schedule.getPersonId()).size() > 0) {
                 for (User user : userRepository.findByAppID(schedule.getPersonId())) {
@@ -56,14 +67,23 @@ public class PushNotificationService {
                     try {
                         if (token.length() > 0) {
                             if (schedule.getType().equals("1")) {
-                                pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
-                                pushNotificationRequest.setToken(token);
-                                fcmService.sendMessageToToken(pushNotificationRequest);
+                                if (user.getDeviceType()==1) {
+                                    pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
+                                    pushNotificationRequest.setToken(token);
+                                    fcmService.sendMessageToToken(pushNotificationRequest);
+                                }
+                                else if (user.getDeviceType()==2){
+                                    hmsService.sendHMSTokenNotification("У Вас завтра дневная смена. Выспитесь крепко!", "Не забудьте!", user.getToken());
+                                }
                                 //      logger.info("Отправили на" + token);
                             } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
+                                if (user.getDeviceType()==1) {
                                 pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста");
                                 pushNotificationRequest.setToken(token);
-                                fcmService.sendMessageToToken(pushNotificationRequest);
+                                fcmService.sendMessageToToken(pushNotificationRequest);                                }
+                                else if (user.getDeviceType()==2){
+                                    hmsService.sendHMSTokenNotification("У Вас завтра работа в качестве специалиста", "Не забудьте!", user.getToken());
+                                }
                                 //      logger.info("Отправили на" + token);
                             }
                         }
@@ -109,20 +129,22 @@ public class PushNotificationService {
     public void uploadId(PushIDRequest request){
         try{
             User user = userRepository.findByToken(request.getToken());
-            if (user == null)
-            {
-                user = new User(request.getToken(), request.getUserId());
+            Integer deviceType = request.getDeviceType();
+            if (deviceType == null)
+                deviceType = 1;
+            if (user == null) {
+                user = new User(request.getToken(), request.getUserId(), deviceType);
                 userRepository.save(user);
-                for (String s : allTopics())
-                    fcmService.unsubscribeUsers(s, request.getToken());
-                fcmService.subscribeUsers("All", request.getToken());
-                fcmService.subscribeUsers(request.getTopic(), request.getToken());
+                if (deviceType == 1)
+                    uploadFCM(user, request);
+                else if (deviceType == 2)
+                    hmsService.uploadHMS(user, request);
             }
-            else if (request.getUserId()!=user.getAppID()){
-                for (String s : allTopics())
-                    fcmService.unsubscribeUsers(s, request.getToken());
-                fcmService.subscribeUsers("All", request.getToken());
-                fcmService.subscribeUsers(request.getTopic(), request.getToken());
+            else if (request.getUserId()!=user.getAppID()) {
+                if (deviceType == 1)
+                    uploadFCM(user, request);
+                else if (deviceType == 2)
+                    hmsService.uploadHMS(user, request);
                 user.setAppID(request.getUserId());
                 userRepository.save(user);
             }
@@ -131,24 +153,52 @@ public class PushNotificationService {
         }
     }
 
-    public void updateToken(UpdateTokenRequest request){
-        try{
-            User user = userRepository.findByToken(request.getOldToken());
-            user.setToken(request.getNewToken());
-            userRepository.save(user);
-        }catch (Exception e) {
+    public void updateToken(UpdateTokenRequest request) {
+        User user = userRepository.findByToken(request.getOldToken());
+        user.setToken(request.getNewToken());
+        userRepository.save(user);
+        if (user.getDeviceType() == 1)
+            updateFCM(user, request);
+        else if (user.getDeviceType() == 2)
+            hmsService.updateHMS(user, request);
+    }
+
+    private void uploadFCM(User user, PushIDRequest request) {
+        try {
+            for (String s : allTopics())
+                fcmService.unsubscribeUsers(s, request.getToken());
+            fcmService.subscribeUsers("All", request.getToken());
+            fcmService.subscribeUsers(request.getTopic(), request.getToken());
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
 
+
+    private void updateFCM(User user, UpdateTokenRequest request) {
+        try {
+            for (String s : allTopics())
+                fcmService.unsubscribeUsers(s, request.getOldToken());
+            fcmService.subscribeUsers("All", request.getNewToken());
+            fcmService.subscribeUsers(rduRepository.findById(personRepository.findById(user.getAppID()).get().getRduId()).get().getTopic(), request.getNewToken());
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+    }
     public void testUser(Integer userId) {
         for (User u : userRepository.findByAppID(userId)) {
             PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
             try {
-                pushNotificationRequest.setTitle("Тест");
-                pushNotificationRequest.setMessage("Тест");
+                String title = "Тест";
+                String body = "Тестовое сообщение";
+                if (u.getDeviceType() == 1){
+                pushNotificationRequest.setTitle(title);
+                pushNotificationRequest.setMessage(body);
                 pushNotificationRequest.setToken(u.getToken());
-                fcmService.sendMessageToToken(pushNotificationRequest);
+                fcmService.sendMessageToToken(pushNotificationRequest);}
+                else if (u.getDeviceType() == 2){
+                    hmsService.sendHMSTokenNotification(body, title, u.getToken());
+                }
             } catch (Exception e) {
                 Throwable cause = e.getCause();
                 if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED")) {
@@ -168,30 +218,26 @@ public class PushNotificationService {
             if (user != null) {
                 userRepository.delete(user);
             }
+            Integer deviceType=1;
+            if (user!=null){
+                if (user.getDeviceType()==2)
+                    deviceType=2;
+            }
+            if (deviceType ==1){
             for (String s : allTopics())
                 fcmService.unsubscribeUsers(s, request.getToken());
             fcmService.subscribeUsers("All", request.getToken());
-            fcmService.subscribeUsers(request.getTopic(), request.getToken());
+            fcmService.subscribeUsers(request.getTopic(), request.getToken());}
+            else if (deviceType == 2) {
+                String authToken = hmsService.getHMSAccessToken().getAccess_token();
+                for (String s : allTopics())
+                    hmsService.unSubscribeHMSUser(s, request.getToken(), authToken);
+                hmsService.subscribeHMSUser("All", request.getToken(), authToken);
+                hmsService.subscribeHMSUser(request.getTopic(), request.getToken(), authToken);
+            }
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
-
-
-  /*  private Map<String, String> getSamplePayloadData() {
-        Map<String, String> pushData = new HashMap<>();
-        pushData.put("messageId", defaults.get("payloadMessageId"));
-        pushData.put("text", defaults.get("payloadData") + " " + LocalDateTime.now());
-        return pushData;
-    }
-
-
-    private PushNotificationRequest getSamplePushNotificationRequest() {
-        PushNotificationRequest request = new PushNotificationRequest(defaults.get("title"),
-                defaults.get("message"),
-                defaults.get("topic"));
-        return request;
-    }*/
-
 
 }

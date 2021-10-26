@@ -12,12 +12,21 @@ public class User {
     private String token;
     @Column(name = "app_id")
     private Integer appID;
+    @Column(name = "device_type")
+    private Integer deviceType;
 
     public User(){}
+
+    public User(String token, Integer appId, Integer deviceType){
+        this.token=token;
+        this.appID=appId;
+        this.deviceType = deviceType;
+    }
 
     public User(String token, Integer appId){
         this.token=token;
         this.appID=appId;
+        this.deviceType = 1;
     }
 
     public Integer getId() {
@@ -38,5 +47,13 @@ public class User {
 
     public void setAppID(Integer appID) {
         this.appID = appID;
+    }
+
+    public Integer getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(Integer deviceType) {
+        this.deviceType = deviceType;
     }
 }

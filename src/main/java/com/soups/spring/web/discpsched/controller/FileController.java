@@ -3,6 +3,7 @@ package com.soups.spring.web.discpsched.controller;
 import java.util.Arrays;
 import java.util.List;
 import com.soups.spring.web.discpsched.entitie.Rdu;
+import com.soups.spring.web.discpsched.hms.HMSService;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationResponse;
 import com.soups.spring.web.discpsched.service.FileService;
@@ -24,6 +25,9 @@ public class FileController {
     @Autowired
     PushNotificationService pushNotificationService;
 
+    @Autowired
+    HMSService hmsService;
+
     @GetMapping("/")
     public String index() {
         return "upload";
@@ -33,6 +37,9 @@ public class FileController {
     public String index_() {
         return "changelog";
     }
+
+    @GetMapping("/privacy")
+    public String index__() {return "privacy";}
 
     @GetMapping("/year/{year}")
     public String addYear(@PathVariable String year) {
@@ -70,6 +77,7 @@ public class FileController {
             Rdu rdu = fileService.nRdu;
             String topic = rdu.getTopic();
             PushNotificationRequest request = new PushNotificationRequest("Внимание!", "Был загружен новый график дежурств. Проверьте ближайшие смены!", topic);
+            hmsService.sendHMSTopicNotification("Внимание!", "Был загружен новый график дежурств. Проверьте ближайшие смены!", topic);
             sendNotification(request);
         }
             redirectAttributes.addFlashAttribute("message",
