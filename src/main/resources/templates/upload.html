@@ -1,29 +1,52 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<link rel="shortcut icon" type="image/png" th:href="@{favicon.png}"/>
+<head>
+  <link rel="shortcut icon" type="image/png" th:href="@{/images/icon.png}"/>
+  <link th:href="@{/styles/select.css}" rel="stylesheet" />
+  <link th:href="@{/styles/normalize.css}" rel="stylesheet" />
+  <link th:href="@{/styles/button.css}" rel="stylesheet" />
+  <link th:href="@{/styles/input.css}" rel="stylesheet" />
+  <link th:href="@{/styles/blocks.css}" rel="stylesheet" />
+  <script type="text/javascript" th:src="@{/js/jquery.js}"></script>
+  <script type="text/javascript" th:src="@{/js/input.js}"></script>
+  <title>DispScheduler</title>
+</head>
 <body>
-
-<h1>Загрузка формы графика дежурств</h1>
-
-<hr/>
-
-<form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
-  <input type="file" name="file"/> <br/><br/>
-  <select type="rduType" name="rduType" >
-    <option selected>Выберите РДУ (актуально только при загрузке графика из РСП)</option>
-    <option>Воронежское РДУ</option>
-    <option>Липецкое РДУ</option>
-  </select>
-  <h5></h5>
-  <button type="submit">Загрузить!</button>
-</form>
-<h4>Для загрузки графика из РСП необходимо экспортировать отчет стандартной формы</h4>
-<h4><a href="http://dispscheduler.ru/changelog">Последние изменения в актуальной версии</a> </h4>
-<hr/>
-
-<div th:if="${message}">
-  <h2 th:text="${message}"/>
+<div id="container">
+  <div id="header">
+    <img src="images/logo.png" height="180px" >
+  </div>
+  <br/>      <br/>
+  <div id="body">
+    <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
+      <div class="file_upload" >
+        <button type="button">Выбрать</button>
+        <div>Файл не выбран</div>
+        <input type="file" name="file">
+      </div>
+      <p><em>Для загрузки графика из РСП необходимо экспортировать отчет стандартной формы</em></p>
+      <br/>
+      <select class="select-css" type="rduType" name="rduType" >
+        <option selected>Выберите РДУ (актуально только при загрузке графика из РСП)</option>
+        <option>Воронежское РДУ</option>
+        <option>Липецкое РДУ</option>
+      </select>
+      <br/>
+      <button type="submit" class="myButton" style="horiz-align: right">Загрузить</button>
+    </form>
+    <div th:if="${message1}">
+      <h2 th:text="${message1}"/>
+      <h2 th:text="${message2}"/>
+    </div>
+  </div>
+  <div id="footer">
+    <a style="margin-left: 10px" href="https://play.google.com/store/apps/details?id=com.VORONEZHRDU.DispScheduler&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"/>
+    <img src="https://assets.website-files.com/60d5a8aafa930ee95a801fa0/60d5a8aafa930e51d7801fcf_google-play-badge.svg" width=180" height=95" alt="Доступно в Google Play">
+    </a>
+    <a style="margin-left: 10px" href="https://appgallery.huawei.com/app/C104864327"/>
+    <img src="https://assets.website-files.com/60d5a8aafa930ee95a801fa0/60d5a8aafa930e8c95801fcc_huawei.svg" width=180" height=95" alt="Доступно в AppGallery">
+    </a>
+  </div>
 </div>
-
 </body>
 </html>

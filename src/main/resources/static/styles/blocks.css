@@ -1,0 +1,33 @@
+html,
+body {
+    height:100%;
+}
+
+#container {
+    min-height:100%;
+    min-width: 100%;
+    position:relative;
+}
+
+/*Стили для блока с шапкой*/
+#header {
+    background:#a0d49c;
+    height: 180px;
+    padding:5px;
+}
+
+/*Стили для центральной части*/
+#body {
+    padding-bottom:100px; /* Высота блока "footer" */
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/*Стили для нижней части*/
+#footer {
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:100px;   /* Высота блока "footer" */
+    background:#a0d49c;
+}

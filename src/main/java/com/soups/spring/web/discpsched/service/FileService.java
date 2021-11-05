@@ -289,45 +289,31 @@ public class FileService {
                     if (row.getCell(i) == null)
                         type = "0";
                     else {
-/*                        int t = row.getCell(i).getCellType();
-                        if (t == 1) {*/
-                            String cellValue = row.getCell(i).toString().trim();
-                            if (cellValue.length() == 0)
-                                type = "0";
-                            else if (cellValue.startsWith("Д")) {
-                                type = "1";
-                            } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н")) {
-                                type = "2";
-                            } else if (cellValue.equals("О")) {
-                                type = "О";
-                            } else if (cellValue.equals("8")||cellValue.equals("8.0")) {
-                                type = "8";
-                            } else if (cellValue.equals("04:00")) {
-                                type = "4";
-                            } else if (cellValue.equals("К")){
-                                type = "К";
-                            } else if (cellValue.equals("Б")){
-                                type = "Б";
-                            }
-                       /* } else if (t == 0)
-                            type = String.valueOf((int) row.getCell(i).getNumericCellValue());
-                        else if (t == 3) {
-                            String cellValue = row.getCell(i).getStringCellValue();
-                            if (cellValue.startsWith("Д")) {
-                                type = "1";
-                            } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н")) {
-                                type = "2";
-                            } else if (cellValue.equals("О"))
-                                type = "О";
-                        } else type = "0";*/
-/*                    row.getCell(i).getStringCellValue();
-                    type = row.getCell(i).getStringCellValue();*/
+                        String cellValue = row.getCell(i).toString().trim();
+                        if (cellValue.length() == 0)
+                            type = "0";
+                        else if (cellValue.startsWith("Д")) {
+                            type = "1";
+                        } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н")) {
+                            type = "2";
+                        } else if (cellValue.equals("О")) {
+                            type = "О";
+                        } else if (cellValue.equals("8") || cellValue.equals("8.0")) {
+                            type = "8";
+                        } else if (cellValue.equals("04:00")) {
+                            type = "4";
+                        } else if (cellValue.equals("К")) {
+                            type = "К";
+                        } else if (cellValue.equals("Б")) {
+                            type = "Б";
+                        }
                     }
                     correctSchedule(monthNumber, yearNumber, day, readName, type, RDUn);
                 }
             }
         }
     }
+
     private void parseScheduleODUCDiop(XSSFSheet worksheet, int n) {
         String header = worksheet.getRow(4).getCell(14).toString();
         int monthNumber = monthNumber(header);
@@ -488,20 +474,21 @@ public class FileService {
             sn = readName.substring(length + 2, length + 3).trim();
         else
             sn=readName.substring(length + 1, length + 2).trim();
-        tempPerson = personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(ln, i2,fn,sn);
+        tempPerson = personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(ln,i2,fn,sn);
         nRdu=rduRepository.findById(i2).get();
         if (!scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).isEmpty()) {
             tempSchedule = scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0);
-            if (!type.equals("0") & !type.equals("о") & !type.equals(tempSchedule.getType())) {
+            if (!type.equals("0") & !type.equals(tempSchedule.getType())) {
                 tempSchedule.setType(type);
                 ArrayList<String> changes = new ArrayList<>();
                 changes.add(monthNumber.toString());
                 changes.add(tempPerson.getLastName());
+                scheduleRepository.save(tempSchedule);
                 if (!changesInSchedule.contains(changes))
                     changesInSchedule.add(changes);
-            } else if (type.equals("0") | (type.equals("0")))
+            } else if (type.equals("0"))
                 scheduleRepository.delete(scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0));
-        } else if (!type.equals("0") & !(type.equals("о"))) {
+        } else if (!type.equals("0")) {
             if (!newMonths.contains(monthNumber))
                 newMonths.add(monthNumber);
             tempSchedule = new Schedule(tempPerson.getId(), tempDateId, type);
