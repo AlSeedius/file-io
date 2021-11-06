@@ -53,6 +53,8 @@ public class FileController {
             t = 1;
         else if (type.equals("Липецкое РДУ"))
             t = 2;
+        else if (type.equals("ОДУ Центра"))
+            t=5;
         fileService.uploadFile(file, t);
         String[] rows = fileService.fileOutput.getOutput();
         if (fileService.fileOutput.type!=4){
