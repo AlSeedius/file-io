@@ -34,12 +34,6 @@ public class PushNotificationController {
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);
     }
 
-/*    @PostMapping("/notification/data")
-    public ResponseEntity sendDataNotification(@RequestBody PushNotificationRequest request) {
-        pushNotificationService.sendPushNotification(request);
-        return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);
-    }*/
-
     @PostMapping("/notification/upload")
     public ResponseEntity uploadID(@RequestBody PushIDRequest request) {
         pushNotificationService.uploadId(request);
@@ -67,12 +61,4 @@ public class PushNotificationController {
         pushNotificationService.updateToken(request);
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "OK"), HttpStatus.OK);
     }
-
-/*    @GetMapping("/notification/hmsAccess")
-    public ResponseEntity<String> test() throws IOException {
-        List<String> list = new ArrayList<String>();
-        list.add("IQAAAACy0nQgAACC4I5JXRVKefQkY4xKyXJPcpDMvBOmuTanmbXGCHl7N1Cg_gEo2uTMNNaTHE8pAs4cNmwL0QXJYdRX2EMkGoMhV07fhCy5YC7d8A");
-        return pushNotificationService.sendHMSTokenNotification("ык", "ык", list);
-        //return pushNotificationService.getHMSAccessToken();
-    }*/
 }

@@ -56,24 +56,8 @@ public class FileController {
         else if (type.equals("Липецкое РДУ"))
             t = 2;
         fileService.uploadFile(file, t);
-        if (fileService.changesInSchedule.isEmpty() & fileService.newMonths.isEmpty())
-            addInfo = ", но не было обнаружено никаких изменений по сравнению с предыдущим графиком.";
-        else {
-            if (!fileService.changesInSchedule.isEmpty()) {
-                addInfo += "\nВнесены изменения:\n ";
-                for (List<String> list : fileService.changesInSchedule)
-                    addInfo += "Месяц: " + list.get(0) + ", " + list.get(1) + "; \n ";
-                addInfo = addInfo.substring(0, addInfo.length() - 2);
-                addInfo += ". ";
-            }
-            if (!fileService.newMonths.isEmpty()) {
-                addInfo += "\nДобавлены месяцы:\n ";
-                for (Integer months : fileService.newMonths) {
-                    addInfo += months.toString() + ", ";
-                }
-                addInfo = addInfo.substring(0, addInfo.length() - 2);
-                addInfo += ".";
-            }
+        String[] rows = fileService.fileOutput.getOutput();
+        if (fileService.fileOutput.type!=4){
             Rdu rdu = fileService.nRdu;
             String topic = rdu.getTopic();
             PushNotificationRequest request = new PushNotificationRequest("Внимание!", "Был загружен новый график дежурств. Проверьте ближайшие смены!", topic);
@@ -82,7 +66,8 @@ public class FileController {
         }
         redirectAttributes.addFlashAttribute("message1",
                 "Вы успешно загрузили файл " + file.getOriginalFilename());
-        redirectAttributes.addFlashAttribute("message2", addInfo);
+        redirectAttributes.addFlashAttribute("message2", rows[0]);
+        redirectAttributes.addFlashAttribute("message3", rows[1]);
         return "redirect:/";
     }
 
@@ -91,7 +76,3 @@ public class FileController {
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);}
 
 }
-
-/*TODO:
-   1. Облагородить вывод информации после успешной загрукзи;
-*  2. Сделать методы по ссылке для проверки работоспособности сервисов уведомлений (отдельно ХМС и фаербэйс) */

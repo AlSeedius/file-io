@@ -13,10 +13,7 @@ import com.soups.spring.web.discpsched.DAO.PersonRepository;
 import com.soups.spring.web.discpsched.DAO.RduRepository;
 import com.soups.spring.web.discpsched.DAO.ScheduleRepository;
 import com.soups.spring.web.discpsched.FileStorageException;
-import com.soups.spring.web.discpsched.entitie.Calendar;
-import com.soups.spring.web.discpsched.entitie.Person;
-import com.soups.spring.web.discpsched.entitie.Rdu;
-import com.soups.spring.web.discpsched.entitie.Schedule;
+import com.soups.spring.web.discpsched.entitie.*;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -51,8 +48,7 @@ public class FileService {
         this.scheduleRepository = scheduleRepository;
     }
 
-    public List<Integer> newMonths;
-    public List<ArrayList<String>> changesInSchedule;
+    public FileOutput fileOutput;
     public Rdu nRdu;
 
 
@@ -62,10 +58,9 @@ public class FileService {
     public void uploadFile(MultipartFile file, Integer type) {
         try {
         //    String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
-            newMonths = new ArrayList<>();
-            changesInSchedule = new ArrayList<>();
          //   Path copyLocation = Paths.get(uploadDir + File.separator + path);
          //   Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
+            fileOutput = new FileOutput();
             startParsing(file, type);
         } catch (Exception e) {
             e.printStackTrace();
@@ -465,7 +460,7 @@ public class FileService {
         Person tempPerson;
         Schedule tempSchedule;
         tempDate = LocalDate.of(yearNumber, monthNumber, i);
-        int tempDateId = calendarRepository.findByDay(tempDate).getId()+1;
+        int tempDateId = calendarRepository.findByDay(tempDate).getId() + 1;
         int length = readName.indexOf('.');
         String fn = readName.substring(length - 1, length).trim();
         String ln = readName.substring(0, length - 2).trim();
@@ -473,9 +468,9 @@ public class FileService {
         if (readName.substring(length + 1, length + 2).equals(" "))
             sn = readName.substring(length + 2, length + 3).trim();
         else
-            sn=readName.substring(length + 1, length + 2).trim();
-        tempPerson = personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(ln,i2,fn,sn);
-        nRdu=rduRepository.findById(i2).get();
+            sn = readName.substring(length + 1, length + 2).trim();
+        tempPerson = personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(ln, i2, fn, sn);
+        nRdu = rduRepository.findById(i2).get();
         if (!scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).isEmpty()) {
             tempSchedule = scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0);
             if (!type.equals("0") & !type.equals(tempSchedule.getType())) {
@@ -484,13 +479,17 @@ public class FileService {
                 changes.add(monthNumber.toString());
                 changes.add(tempPerson.getLastName());
                 scheduleRepository.save(tempSchedule);
-                if (!changesInSchedule.contains(changes))
-                    changesInSchedule.add(changes);
-            } else if (type.equals("0"))
+                fileOutput.addCorrection(new Correction(calendarRepository.findById(tempDateId).get().getDay(),
+                        ln + " " + fn + "." + sn + "."));
+
+            } else if (type.equals("0")) {
                 scheduleRepository.delete(scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0));
+                fileOutput.addDelete(new Correction(calendarRepository.findById(tempDateId).get().getDay(),
+                        ln + " " + fn + "." + sn + "."));
+            }
         } else if (!type.equals("0")) {
-            if (!newMonths.contains(monthNumber))
-                newMonths.add(monthNumber);
+            fileOutput.addNew(new Correction(calendarRepository.findById(tempDateId).get().getDay(),
+                    ln + " " + fn + "." + sn + "."));
             tempSchedule = new Schedule(tempPerson.getId(), tempDateId, type);
             scheduleRepository.save(tempSchedule);
         }
