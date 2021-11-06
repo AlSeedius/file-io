@@ -1,7 +1,5 @@
 package com.soups.spring.web.discpsched.controller;
 
-import java.util.Arrays;
-import java.util.List;
 import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.hms.HMSService;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
@@ -61,8 +59,8 @@ public class FileController {
             Rdu rdu = fileService.nRdu;
             String topic = rdu.getTopic();
             PushNotificationRequest request = new PushNotificationRequest("Внимание!", "Был загружен новый график дежурств. Проверьте ближайшие смены!", topic);
-        //    hmsService.sendHMSTopicNotification("Был загружен новый график дежурств. Проверьте ближайшие смены!", "Внимание!", topic);
-            //      sendNotification(request);
+            hmsService.sendHMSTopicNotification("Был загружен новый график дежурств. Проверьте ближайшие смены!", "Внимание!", topic);
+            sendNotification(request);
         }
         redirectAttributes.addFlashAttribute("message1",
                 "Вы успешно загрузили файл " + file.getOriginalFilename());
