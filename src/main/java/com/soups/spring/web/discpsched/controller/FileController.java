@@ -1,18 +1,26 @@
 package com.soups.spring.web.discpsched.controller;
 
+import com.soups.spring.web.discpsched.DAO.RduRepository;
 import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.hms.HMSService;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationResponse;
 import com.soups.spring.web.discpsched.service.FileService;
 import com.soups.spring.web.discpsched.service.PushNotificationService;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class FileController {
@@ -21,13 +29,22 @@ public class FileController {
     FileService fileService;
 
     @Autowired
+    RduRepository rduRepository;
+
+    @Autowired
     PushNotificationService pushNotificationService;
 
     @Autowired
     HMSService hmsService;
 
     @GetMapping("/")
-    public String index() {
+    public String index(Model model) {
+        List<String> rList = new ArrayList<>();
+        for (Rdu r: rduRepository.findAll()) {
+            if (r.getId() != 3 && r.getId() != 4)
+                rList.add(r.getName());
+        }
+        model.addAttribute("cdata", rList);
         return "upload";
     }
 
@@ -47,15 +64,8 @@ public class FileController {
 
     @PostMapping("/uploadFile")
     public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes, @RequestParam("rduType") String type) {
-        String addInfo = "! ";
-        int t = 0;
-        if (type.equals("Воронежское РДУ"))
-            t = 1;
-        else if (type.equals("Липецкое РДУ"))
-            t = 2;
-        else if (type.equals("ОДУ Центра"))
-            t=5;
-        fileService.uploadFile(file, t);
+        int rduId = rduRepository.findByName(type).getId();
+        fileService.uploadFile(file, rduId);
         String[] rows = fileService.fileOutput.getOutput();
         if (fileService.fileOutput.type!=4){
             Rdu rdu = fileService.nRdu;

@@ -26,11 +26,16 @@
       </div>
       <p><em>Для загрузки графика из РСП необходимо экспортировать отчет стандартной формы</em></p>
       <br/>
-      <select class="select-css" type="rduType" name="rduType" >
+      <select class="select-css" type="rduType" name="rduType" th:object="${cdata}" >
         <option selected>Выберите РДУ (актуально только при загрузке графика из РСП)</option>
+        <option th:each="id  : ${cdata}"
+                th:text = "${id}"
+                th:value="${id}">option</option>
+
+<!--        <option selected>Выберите РДУ (актуально только при загрузке графика из РСП)</option>
         <option>Воронежское РДУ</option>
         <option>Липецкое РДУ</option>
-        <option>ОДУ Центра</option>
+        <option>ОДУ Центра</option>-->
       </select>
       <br/>
       <button type="submit" class="myButton" style="horiz-align: right">Загрузить</button>
@@ -52,3 +57,7 @@
 </div>
 </body>
 </html>
+
+
+<!--
+сделать форму для добавления нового РДУ-->

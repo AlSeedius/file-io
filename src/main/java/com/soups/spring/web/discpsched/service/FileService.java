@@ -55,13 +55,13 @@ public class FileService {
     @Value("${app.upload.dir:${user.home}}")
     public String uploadDir;
 
-    public void uploadFile(MultipartFile file, Integer type) {
+    public void uploadFile(MultipartFile file, Integer rduId) {
         try {
         //    String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
          //   Path copyLocation = Paths.get(uploadDir + File.separator + path);
          //   Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
             fileOutput = new FileOutput();
-            startParsing(file, type);
+            startParsing(file, rduId);
         } catch (Exception e) {
             e.printStackTrace();
             throw new FileStorageException("Could not store file " + file.getOriginalFilename()
@@ -69,7 +69,7 @@ public class FileService {
         }
     }
 
-    private void startParsing(MultipartFile reapExcelDataFile, Integer type) throws IOException {
+    private void startParsing(MultipartFile reapExcelDataFile, Integer rduId) throws IOException {
         String fileName = reapExcelDataFile.getOriginalFilename();
         String expansion = fileName.substring(fileName.indexOf("."));
         if (expansion.equals(".xlsx")) {
@@ -82,8 +82,8 @@ public class FileService {
                 }
             }
             else {
-                Integer n = parseNamesRSP(workbook.getSheetAt(0), type);
-                parseScheduleRSP(workbook.getSheetAt(0), n, type);
+                Integer n = parseNamesRSP(workbook.getSheetAt(0), rduId);
+                parseScheduleRSP(workbook.getSheetAt(0), n, rduId);
             }
         }
         else {
@@ -109,7 +109,7 @@ public class FileService {
         }
     }
 
-    private Integer parseNamesRSP(XSSFSheet worksheet, Integer type) {
+    private Integer parseNamesRSP(XSSFSheet worksheet, Integer rduId) {
         int k = 0;
         for (int i = 3; i < worksheet.getPhysicalNumberOfRows(); i++) {
             XSSFRow row = worksheet.getRow(i);
@@ -122,9 +122,9 @@ public class FileService {
                         tempPerson.setLastName(textOfARow.substring(0, length - 2).trim());
                         tempPerson.setFirstName(textOfARow.substring(length - 1, length).trim());
                         tempPerson.setSecondName(textOfARow.substring(length + 1, length + 2).trim());
-                        tempPerson.setRduId(type);
+                        tempPerson.setRduId(rduId);
                         k++;
-                        if (personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(tempPerson.getLastName(), type,
+                        if (personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(tempPerson.getLastName(), rduId,
                                 tempPerson.getFirstName(), tempPerson.getSecondName()) == null)
                             if (!tempPerson.getLastName().isEmpty() | !tempPerson.getFirstName().isEmpty() | !tempPerson.getSecondName().isEmpty())
                                 personRepository.save(tempPerson);
@@ -253,7 +253,7 @@ public class FileService {
         return k;
     }
 
-    private void parseScheduleRSP(XSSFSheet worksheet, Integer n, Integer RDUn) {
+    private void parseScheduleRSP(XSSFSheet worksheet, Integer n, Integer rduId) {
         String header = "";
         int c = 0;
         while (header.isEmpty()) {
@@ -303,7 +303,7 @@ public class FileService {
                             type = "Б";
                         }
                     }
-                    correctSchedule(monthNumber, yearNumber, day, readName, type, RDUn);
+                    correctSchedule(monthNumber, yearNumber, day, readName, type, rduId);
                 }
             }
         }
