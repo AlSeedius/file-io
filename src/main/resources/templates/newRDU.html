@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <link rel="shortcut icon" type="image/png" th:href="@{/images/icon.png}"/>
-  <link th:href="@{/styles/select.css}" rel="stylesheet" />
   <link th:href="@{/styles/normalize.css}" rel="stylesheet" />
   <link th:href="@{/styles/button.css}" rel="stylesheet" />
-  <link th:href="@{/styles/input.css}" rel="stylesheet" />
   <link th:href="@{/styles/blocks.css}" rel="stylesheet" />
+  <link th:href="@{/styles/input_text.css}" rel="stylesheet" />
+  <link th:href="@{/styles/radio_button.css}" rel="stylesheet" />
   <script type="text/javascript" th:src="@{/js/jquery.js}"></script>
   <script type="text/javascript" th:src="@{/js/input.js}"></script>
   <title>DispScheduler</title>
@@ -18,27 +18,37 @@
   </div>
   <br/>      <br/>
   <div id="body">
-    <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
-      <div class="file_upload" >
-        <button type="button">Выбрать</button>
-        <div>Файл не выбран</div>
-        <input type="file" name="file">
+    <form method="POST" th:action="@{/addService}">
+      <input type="text" name="name" placeholder="Название службы..."> <br/><br/>
+      <input type="text" name="topic" placeholder="Тема для уведомлений..."><br/><br/>
+      Сменный график (не скользящий)
+      <div class="form_toggle">
+        <div class="form_toggle-item item-1">
+          <input id="fid-1" type="radio" name="type" value="1" checked>
+          <label for="fid-1">Да</label>
+        </div>
+        <div class="form_toggle-item item-2">
+          <input id="fid-2" type="radio" name="type" value="2">
+          <label for="fid-2">Нет</label>
+        </div>
       </div>
-      <p><em>Для загрузки графика из РСП необходимо экспортировать отчет стандартной формы в Excel</em></p>
-      <br/>
-      <select class="select-css" type="rduType" name="rduType" th:object="${cdata}" >
-        <option selected>Выберите РДУ (актуально только при загрузке графика из РСП)</option>
-        <option th:each="id  : ${cdata}"
-                th:text = "${id}"
-                th:value="${id}">option</option>
-      </select>
-      <br/>
+      <br/><br/>
+      График добавляется путём экспорта из РСП
+      <div class="form_toggle">
+        <div class="form_toggle-item item-1">
+          <input id="ffid-1" type="radio" name="rsp" value="1" checked>
+          <label for="ffid-1">Да</label>
+        </div>
+        <div class="form_toggle-item item-2">
+          <input id="ffid-2" type="radio" name="rsp" value="0">
+          <label for="ffid-2">Нет</label>
+        </div>
+      </div>
+      <br/>      <br/><br/>
       <button type="submit" class="myButton" style="horiz-align: right">Загрузить</button>
     </form>
-    <div th:if="${message1}">
-      <h2 th:text="${message1}"/>
-      <h2 th:text="${message2}"/>
-      <h3 th:text="${message3}"/>
+    <div th:if="${message}">
+      <h2 th:text="${message}"/>
     </div>
   </div>
   <div id="footer">

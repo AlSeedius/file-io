@@ -41,11 +41,16 @@ public class FileController {
     public String index(Model model) {
         List<String> rList = new ArrayList<>();
         for (Rdu r: rduRepository.findAll()) {
-            if (r.getId() != 3 && r.getId() != 4)
+            if (r.getRsp()==1)
                 rList.add(r.getName());
         }
         model.addAttribute("cdata", rList);
         return "upload";
+    }
+
+    @GetMapping("/newService")
+    public String newRDU() {
+        return "newRDU";
     }
 
     @GetMapping("/changelog")
@@ -79,6 +84,19 @@ public class FileController {
         redirectAttributes.addFlashAttribute("message2", rows[0]);
         redirectAttributes.addFlashAttribute("message3", rows[1]);
         return "redirect:/";
+    }
+
+    @PostMapping("/addService")
+    public String addService(@RequestParam("name") String name, @RequestParam("topic") String topic,
+                             @RequestParam("type") Integer type, @RequestParam("rsp") Integer rsp, RedirectAttributes attributes){
+        Rdu tempRdu = new Rdu();
+        tempRdu.setName(name);
+        tempRdu.setRsp(rsp);
+        tempRdu.setTopic(topic);
+        tempRdu.setType(type);
+        rduRepository.save(tempRdu);
+        attributes.addFlashAttribute("message", "Успешно добавлена служба: " + tempRdu.getName());
+        return "redirect:/newService";
     }
 
     public ResponseEntity sendNotification(PushNotificationRequest request) {
