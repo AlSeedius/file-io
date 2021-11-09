@@ -287,9 +287,9 @@ public class FileService {
                         String cellValue = row.getCell(i).toString().trim();
                         if (cellValue.length() == 0)
                             type = "0";
-                        else if (cellValue.startsWith("Д")) {
+                        else if (cellValue.startsWith("Д") || cellValue.equals("дД")) {
                             type = "1";
-                        } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н")) {
+                        } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н") || cellValue.equals("дН")) {
                             type = "2";
                         } else if (cellValue.equals("О")) {
                             type = "О";
