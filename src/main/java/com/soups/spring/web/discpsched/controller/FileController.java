@@ -69,7 +69,9 @@ public class FileController {
 
     @PostMapping("/uploadFile")
     public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes, @RequestParam("rduType") String type) {
-        int rduId = rduRepository.findByName(type).getId();
+        int rduId = 0;
+        if (!type.contains("Выберите"))
+            rduId = rduRepository.findByName(type).getId();
         fileService.uploadFile(file, rduId);
         String[] rows = fileService.fileOutput.getOutput();
         if (fileService.fileOutput.type!=4){

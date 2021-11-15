@@ -57,9 +57,6 @@ public class FileService {
 
     public void uploadFile(MultipartFile file, Integer rduId) {
         try {
-        //    String path = new String(StringUtils.cleanPath(file.getOriginalFilename()).getBytes(),UTF_8);
-         //   Path copyLocation = Paths.get(uploadDir + File.separator + path);
-         //   Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
             fileOutput = new FileOutput();
             startParsing(file, rduId);
         } catch (Exception e) {
@@ -293,7 +290,7 @@ public class FileService {
                             type = "2";
                         } else if (cellValue.equals("О")) {
                             type = "О";
-                        } else if (cellValue.equals("8") || cellValue.equals("8.0")) {
+                        } else if (cellValue.equals("8") || cellValue.equals("8.0") || cellValue.equals("Тк") || cellValue.equals("Э")) {
                             type = "8";
                         } else if (cellValue.equals("04:00")) {
                             type = "4";
@@ -542,6 +539,7 @@ public class FileService {
         }
         return 0;
     }
+
     private Integer dayCount(Integer month, Integer year) {
         if (month == 1 || month == 3 || month == 5 || month == 7
                 || month == 8 || month == 10 || month == 12) {
@@ -555,68 +553,4 @@ public class FileService {
                 return 28;
         }
     }
-
 }
-    /*    private Integer parseNamesVRN(HSSFSheet worksheet) {
-            int k = 0;
-            for (int i = 7; i < worksheet.getPhysicalNumberOfRows(); i = i + 2) {
-                HSSFRow row = worksheet.getRow(i);
-                if (row.getCell(2) != null)
-                    if (!row.getCell(2).getStringCellValue().isEmpty()) {
-                        String textOfARow = row.getCell(2).getStringCellValue();
-                        if (textOfARow.length() > 0) {
-                            Person tempPerson = new Person();
-                            int length = textOfARow.indexOf('.');
-                            tempPerson.setLastName(textOfARow.substring(0, length - 2).trim());
-                            tempPerson.setFirstName(textOfARow.substring(length - 1, length).trim());
-                            tempPerson.setSecondName(textOfARow.substring(length + 1, length + 2).trim());
-                            tempPerson.setRduId(1);
-                            k++;
-                            if (personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(tempPerson.getLastName(), 1,
-                                    tempPerson.getFirstName(),tempPerson.getSecondName()) == null)
-                                if (!tempPerson.getLastName().isEmpty() | !tempPerson.getFirstName().isEmpty() | !tempPerson.getSecondName().isEmpty())
-                                    personRepository.save(tempPerson);
-                        }
-                    }
-            }
-            return k;
-        }
-
-    private int rduN(HSSFWorkbook workbook){
-        HSSFSheet worksheet = workbook.getSheetAt(0);
-        String header;
-        if (worksheet.getRow(3).getCell(3).toString().isEmpty())
-            return 2;
-        else
-            return 1;
-    }
-    private void parseScheduleVRN(HSSFSheet worksheet, Integer n) {
-        String header = worksheet.getRow(3).getCell(3).toString();
-        Integer monthNumber = monthNumber(header);
-        Integer yearNumber = yearNumber(header);
-        Integer dayCount = dayCount(monthNumber, yearNumber);
-        for (int i = 3; i < dayCount + 3; i++) {
-            for (int j = 7; j < 7 + 2 * n; j = j + 2) {
-                HSSFRow row = worksheet.getRow(j);
-                String readName = row.getCell(2).getStringCellValue();
-                String type = "0";
-                if (row.getCell(i) == null)
-                    type = "0";
-                else {
-                    int t = row.getCell(i).getCellType();
-                    if (t == 1) {
-                        type = row.getCell(i).getStringCellValue();
-                        if (type.length() == 0)
-                            type = "0";
-                    } else if (t == 0)
-                        type = String.valueOf((int) row.getCell(i).getNumericCellValue());
-//                    else if (t == 3)
-//                    {
-//                        row.getCell(i).setCellType(1);
-//                        type = row.getCell(i).getStringCellValue();
-//                    }
-                }
-                correctSchedule(monthNumber, yearNumber, i, readName, type, 1);
-            }
-        }
-    }*/
