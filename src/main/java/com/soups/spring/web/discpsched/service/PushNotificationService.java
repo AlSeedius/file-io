@@ -75,7 +75,6 @@ public class PushNotificationService {
                                 else if (user.getDeviceType()==2){
                                     hmsService.sendHMSTokenNotification("У Вас завтра дневная смена. Выспитесь крепко!", "Не забудьте!", user.getToken());
                                 }
-                                //      logger.info("Отправили на" + token);
                             } else if (schedule.getType().equals("7") | schedule.getType().equals("8") | schedule.getType().equals("4")) {
                                 if (user.getDeviceType()==1) {
                                 pushNotificationRequest.setMessage("У Вас завтра работа в качестве специалиста");
@@ -84,12 +83,11 @@ public class PushNotificationService {
                                 else if (user.getDeviceType()==2){
                                     hmsService.sendHMSTokenNotification("У Вас завтра работа в качестве специалиста", "Не забудьте!", user.getToken());
                                 }
-                                //      logger.info("Отправили на" + token);
                             }
                         }
                     } catch (Exception e) {
                         Throwable cause = e.getCause();
-                        if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED")) {
+                        if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED") || cause.getMessage().equals("Requested entity was not found.")) {
                             User u = userRepository.findByToken(pushNotificationRequest.getToken());
                             if (u != null) {
                                 userRepository.delete(u);
@@ -101,6 +99,52 @@ public class PushNotificationService {
             }
         }
     }
+
+    @Scheduled (cron = "0 00 0 * * *")
+    public void sendVacationReminder() {
+        PushNotificationRequest pushNotificationRequest = new PushNotificationRequest();
+        boolean notificationNeededToBeSent;
+        List<Schedule> schedules = scheduleRepository.findByDateId(calendarRepository.findByDay(LocalDate.now().plusDays(2)).getId());
+        for (Schedule s : schedules) {
+            notificationNeededToBeSent = false;
+            if (s.getType().equals("О")) {
+                if (scheduleRepository.findByDateIdAndPersonId(s.getDateId() - 1, s.getPersonId()).isEmpty()) {
+                    notificationNeededToBeSent = true;
+                } else {
+                    if (!scheduleRepository.findByDateIdAndPersonId(s.getDateId() - 1, s.getPersonId()).get(0).getType().equals("О"))
+                        notificationNeededToBeSent = true;
+                }
+                if (notificationNeededToBeSent) {
+                    List<User> users = userRepository.findByAppID(s.getPersonId());
+                    String title = "Принимайте поздравления!";
+                    String message = "Пусть Ваш отпуск будет незабываемым и дарит только позитивные эмоции!";
+                    for (User user : users) {
+                        try {
+                            if (user.getDeviceType() == 1) {
+                                pushNotificationRequest = new PushNotificationRequest();
+                                pushNotificationRequest.setTitle(title);
+                                pushNotificationRequest.setMessage(message);
+                                pushNotificationRequest.setToken(user.getToken());
+                                fcmService.sendMessageToToken(pushNotificationRequest);
+                            } else if (user.getDeviceType() == 2) {
+                                hmsService.sendHMSTokenNotification(message, title, user.getToken());
+                            }
+                        } catch (Exception e) {
+                            Throwable cause = e.getCause();
+                            if (cause.getMessage().equals("NOT_FOUND") || cause.getMessage().equals("UNREGISTERED") || cause.getMessage().equals("Requested entity was not found.")) {
+                                User u = userRepository.findByToken(pushNotificationRequest.getToken());
+                                if (u != null) {
+                                    userRepository.delete(u);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 
     public void sendPushNotificationWithoutData(PushNotificationRequest request) {
         try {
