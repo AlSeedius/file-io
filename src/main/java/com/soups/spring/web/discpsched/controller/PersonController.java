@@ -16,9 +16,6 @@ public class PersonController {
     @Autowired
     PersonService personService;
 
-    @Autowired
-
-
     @GetMapping("/all")
     public Iterable<Person> allNames(){
         return personService.foundPersons();

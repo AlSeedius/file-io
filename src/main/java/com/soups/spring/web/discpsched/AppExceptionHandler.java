@@ -10,11 +10,9 @@ public class AppExceptionHandler {
 
     @ExceptionHandler(FileStorageException.class)
     public ModelAndView handleException(FileStorageException exception, RedirectAttributes redirectAttributes) {
-
         ModelAndView mav = new ModelAndView();
         mav.addObject("message", exception.getMsg());
         mav.setViewName("error");
         return mav;
-
     }
 }

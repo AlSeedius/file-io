@@ -1,31 +1,19 @@
 package com.soups.spring.web.discpsched.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soups.spring.web.discpsched.DAO.*;
 import com.soups.spring.web.discpsched.entitie.Rdu;
 import com.soups.spring.web.discpsched.entitie.Schedule;
 import com.soups.spring.web.discpsched.entitie.User;
 import com.soups.spring.web.discpsched.firebase.FCMService;
 import com.soups.spring.web.discpsched.hms.HMSService;
-import com.soups.spring.web.discpsched.hms.Token;
-import com.soups.spring.web.discpsched.hms.pushes.TokenRootNotification;
-import com.soups.spring.web.discpsched.hms.pushes.TopicRootNotification;
-import com.soups.spring.web.discpsched.hms.pushes.TopicSubscriber;
 import com.soups.spring.web.discpsched.model.PushIDRequest;
 import com.soups.spring.web.discpsched.model.PushNotificationRequest;
 import com.soups.spring.web.discpsched.model.UpdateTokenRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

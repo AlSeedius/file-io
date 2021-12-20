@@ -18,6 +18,9 @@ public class PersonService {
     @Autowired
     PersonRepository personRepository;
 
+    @Autowired
+    RduRepository rduRepository;
+
     public Iterable<Person> foundPersons() {
         return personRepository.findAll();
     }
@@ -27,17 +30,9 @@ public class PersonService {
     }
 
     public Iterable<Person> rduPersons(Integer rduId){ return personRepository.findByRduId(rduId);}
-    @Autowired
-    RduRepository rduRepository;
 
     public Iterable<Rdu> rduName() {
-        List<String> names = new ArrayList<>();
         return rduRepository.findAll();
-  /*      Collections.sort(rduList, ((o1, o2) -> o1.));
-        rduList.
-        for (Rdu rdu : rduList)
-            names.add(rdu.getName());
-        return names;*/
     }
 
 }

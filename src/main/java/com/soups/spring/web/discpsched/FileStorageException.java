@@ -7,7 +7,6 @@ public class FileStorageException extends RuntimeException {
 
     public FileStorageException(String msg) {
         this.msg = msg;
-
     }
 
     public String getMsg() {

@@ -36,13 +36,11 @@ public class ScheduleService {
         if (list.isEmpty()) {
             found = false;
             list = scheduleRepository.findByDateIdGreaterThanEqualAndPersonId(dateId, Integer.parseInt(personID));
-            list.sort(Comparator.comparingInt(Schedule::getDateId));
-            return list.get(0);
         } else {
             found = true;
-            list.sort(Comparator.comparingInt(Schedule::getDateId));
-            return list.get(0);
         }
+        list.sort(Comparator.comparingInt(Schedule::getDateId));
+        return list.get(0);
     }
     public Callback8 callback8(Integer personId, String date) {
         Callback8 cb = new Callback8();
@@ -76,7 +74,6 @@ public class ScheduleService {
         Person person = personRepository.findById(Integer.parseInt(personID)).get();
         CallbackShift tempCallBack = new CallbackShift();
         List<Schedule> thisDayList = scheduleRepository.findByDateIdAndType(actShift.getDateId(), actShift.getType());
-        List<Integer> colId = null;
         String colName = "";
         for (Schedule sched : thisDayList) {
             if (sched.getPersonId() != actShift.getPersonId()) {

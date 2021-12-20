@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RduRepository extends CrudRepository<Rdu, Integer> {
     Rdu findByName(String name);
-    //Rdu findById (Integer id);
 }

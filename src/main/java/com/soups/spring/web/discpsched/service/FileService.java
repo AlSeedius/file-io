@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileService {
+
     @Autowired
     private PersonRepository personRepository;
     @Autowired
@@ -40,12 +41,7 @@ public class FileService {
     private RduRepository rduRepository;
 
 
-    public FileService(PersonRepository personRepository,
-                       CalendarRepository dateRepository,
-                       ScheduleRepository scheduleRepository) {
-        this.personRepository = personRepository;
-        this.calendarRepository = dateRepository;
-        this.scheduleRepository = scheduleRepository;
+    public FileService() {
     }
 
     public FileOutput fileOutput;
@@ -77,13 +73,11 @@ public class FileService {
                     Integer n = parseNamesODUCDiop(workbook.getSheetAt(i));
                     parseScheduleODUCDiop(workbook.getSheetAt(i), n);
                 }
-            }
-            else {
+            } else {
                 Integer n = parseNamesRSP(workbook.getSheetAt(0), rduId);
                 parseScheduleRSP(workbook.getSheetAt(0), n, rduId);
             }
-        }
-        else {
+        } else {
             HSSFWorkbook workbook = new HSSFWorkbook(reapExcelDataFile.getInputStream());
             String sName = workbook.getSheetAt(0).getSheetName();
             if (sName.equals("Новый год")) {
@@ -91,17 +85,11 @@ public class FileService {
                     Integer n = parseNamesODUCDiop(workbook.getSheetAt(i));
                     parseScheduleODUCDiop(workbook.getSheetAt(i), n);
                 }
-            }
-            else if (sName.equals("Лист1")){
-                for (int i=1; i<=workbook.getNumberOfSheets()-1; i++){
+            } else {
+                for (int i = 0; i <= workbook.getNumberOfSheets() - 1; i++) {
                     Integer n = parseNamesODUCSopr(workbook.getSheetAt(i));
-                    parseScheduleODUCSopr(workbook.getSheetAt(i),n);
+                    parseScheduleODUCSopr(workbook.getSheetAt(i), n);
                 }
-            }
-            else {
-                int i = workbook.getNumberOfSheets() - 1;
-                Integer n = parseNamesLPC(workbook.getSheetAt(i));
-                parseScheduleLPC(workbook.getSheetAt(i), n);
             }
         }
     }

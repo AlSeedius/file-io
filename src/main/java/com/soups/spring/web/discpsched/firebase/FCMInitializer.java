@@ -38,10 +38,7 @@ public class FCMInitializer {
                 FirebaseApp.initializeApp(options);
                 logger.info("Firebase application has been initialized");
             }
-  //          for (User user : userRepository.findAll()) {
-  //              fcmService.subscribeUsers("All",user.getToken());
-  //          }
-        } catch (IOException  e) {
+        } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }

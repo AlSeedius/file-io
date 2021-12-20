@@ -9,6 +9,4 @@ import java.time.LocalDate;
 @Repository
 public interface CalendarRepository extends CrudRepository<Calendar, Integer> {
     Calendar findByDay (LocalDate date);
-   // List<Person> findByFirstName(String firstName);
-   // List<Person> findBySecondName(String secondName);
 }

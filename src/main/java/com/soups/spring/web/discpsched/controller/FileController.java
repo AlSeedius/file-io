@@ -74,13 +74,17 @@ public class FileController {
             rduId = rduRepository.findByName(type).getId();
         fileService.uploadFile(file, rduId);
         String[] rows = fileService.fileOutput.getOutput();
-        if (fileService.fileOutput.type!=4){
-            Rdu rdu = fileService.nRdu;
-            String topic = rdu.getTopic();
-            PushNotificationRequest request = new PushNotificationRequest("Внимание!", "Был загружен новый график дежурств. Проверьте ближайшие смены!", topic);
-            hmsService.sendHMSTopicNotification("Был загружен новый график дежурств. Проверьте ближайшие смены!", "Внимание!", topic);
-            sendNotification(request);
+        Rdu rdu = fileService.nRdu;
+        String notificationHeader = "Внимание!";
+        String notificationText;
+        if (fileService.fileOutput.type == 4) {
+            notificationText = "Был загружен новый график выхода на работу. Проверьте расписание в приложении!";
+        } else {
+            notificationText = "Был загружен новый график дежурств. Проверьте ближайшие смены в приложении!";
         }
+        PushNotificationRequest request = new PushNotificationRequest(notificationHeader, notificationText, rdu.getTopic());
+        hmsService.sendHMSTopicNotification(notificationText, notificationHeader, rdu.getTopic());
+        sendNotification(request);
         redirectAttributes.addFlashAttribute("message1",
                 "Вы успешно загрузили файл " + file.getOriginalFilename());
         redirectAttributes.addFlashAttribute("message2", rows[0]);
@@ -89,7 +93,7 @@ public class FileController {
     }
 
     @PostMapping("/addService")
-    public String addService(@RequestParam("name") String name, @RequestParam("topic") String topic,
+    private String addService(@RequestParam("name") String name, @RequestParam("topic") String topic,
                              @RequestParam("type") Integer type, @RequestParam("rsp") Integer rsp, RedirectAttributes attributes){
         Rdu tempRdu = new Rdu();
         tempRdu.setName(name);
