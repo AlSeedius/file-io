@@ -255,11 +255,9 @@ public class FileService {
                 break;
             }
         }
-        int k = 0;
         int day = 0;
         for (int i = 4; i < z; i++) {
             if (worksheet.getRow(2).getCell(i).getStringCellValue().length() < 1) {
-                k++;
             } else {
                 day++;
                 for (int j = 3; j < 3 + n; j++) {
@@ -444,7 +442,11 @@ public class FileService {
         LocalDate tempDate;
         Person tempPerson;
         Schedule tempSchedule;
-        tempDate = LocalDate.of(yearNumber, monthNumber, i);
+        try {
+            tempDate = LocalDate.of(yearNumber, monthNumber, i);
+        } catch (Exception e) {
+            return;
+        }
         int tempDateId = calendarRepository.findByDay(tempDate).getId() + 1;
         int length = readName.indexOf('.');
         String fn = readName.substring(length - 1, length).trim();

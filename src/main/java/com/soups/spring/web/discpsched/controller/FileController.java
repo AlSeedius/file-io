@@ -74,17 +74,19 @@ public class FileController {
             rduId = rduRepository.findByName(type).getId();
         fileService.uploadFile(file, rduId);
         String[] rows = fileService.fileOutput.getOutput();
-        Rdu rdu = fileService.nRdu;
-        String notificationHeader = "Внимание!";
-        String notificationText;
-        if (fileService.fileOutput.type == 4) {
-            notificationText = "Был загружен новый график выхода на работу. Проверьте расписание в приложении!";
-        } else {
-            notificationText = "Был загружен новый график дежурств. Проверьте ближайшие смены в приложении!";
+        if (!rows[0].equals("Не обнаружено изменений по сравнению с существующим графиком.")) {
+            Rdu rdu = fileService.nRdu;
+            String notificationHeader = "Внимание!";
+            String notificationText;
+            if (fileService.fileOutput.type == 4) {
+                notificationText = "Был загружен новый график выхода на работу. Проверьте расписание в приложении!";
+            } else {
+                notificationText = "Был загружен новый график дежурств. Проверьте ближайшие смены в приложении!";
+            }
+            PushNotificationRequest request = new PushNotificationRequest(notificationHeader, notificationText, rdu.getTopic());
+            hmsService.sendHMSTopicNotification(notificationText, notificationHeader, rdu.getTopic());
+            sendNotification(request);
         }
-        PushNotificationRequest request = new PushNotificationRequest(notificationHeader, notificationText, rdu.getTopic());
-        hmsService.sendHMSTopicNotification(notificationText, notificationHeader, rdu.getTopic());
-        sendNotification(request);
         redirectAttributes.addFlashAttribute("message1",
                 "Вы успешно загрузили файл " + file.getOriginalFilename());
         redirectAttributes.addFlashAttribute("message2", rows[0]);

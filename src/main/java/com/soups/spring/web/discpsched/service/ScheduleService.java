@@ -42,6 +42,7 @@ public class ScheduleService {
         list.sort(Comparator.comparingInt(Schedule::getDateId));
         return list.get(0);
     }
+
     public Callback8 callback8(Integer personId, String date) {
         Callback8 cb = new Callback8();
         int n=-1;
@@ -57,7 +58,7 @@ public class ScheduleService {
         }
         if (n!=-1){
             dateId = scheduleList.get(n).getDateId();
-            List<String> typeList = new ArrayList<String>();
+            List<String> typeList = new ArrayList<>();
             typeList.add("8");
             Person me = personRepository.findById(personId).get();
             cb.setDateOfWork(calendarRepository.findById(dateId).get().getDay());
@@ -97,21 +98,21 @@ public class ScheduleService {
         return tempCallBack;
     }
 
-    public List<CallbackRDUList> RDUList(int nRDU, String date, int nCols){
+    public List<CallbackRDUList> RDUList(int nRDU, String date, int nCols) {
         int dateId = calendarRepository.findByDay(LocalDate.parse(date)).getId() + 1;
         List<CallbackRDUList> callback = new ArrayList<>();
-        for (Person p : personRepository.findByRduId(nRDU)){
+        for (Person p : personRepository.findByRduId(nRDU)) {
             CallbackRDUList cb = new CallbackRDUList(nCols);
-            cb.setName(p.getLastName()+" "+p.getFirstName()+". "+p.getSecondName()+".");
-            List<Schedule> schedList =  scheduleRepository.findByDateIdGreaterThanEqualAndDateIdLessThanEqualAndPersonId(dateId, dateId+nCols-1, p.getId());
-            for (int i=0; i<nCols; i++){
-                for (Schedule s : schedList){
-                    if (s.getDateId()==(i+dateId)){
+            cb.setName(p.getLastName() + " " + p.getFirstName() + ". " + p.getSecondName() + ".");
+            List<Schedule> schedList = scheduleRepository.findByDateIdGreaterThanEqualAndDateIdLessThanEqualAndPersonId(dateId, dateId + nCols - 1, p.getId());
+            for (int i = 0; i < nCols; i++) {
+                for (Schedule s : schedList) {
+                    if (s.getDateId() == (i + dateId)) {
                         cb.addTypes(i, s.getType());
                         break;
                     }
                 }
-                if (cb.getTypes()[i]==null)
+                if (cb.getTypes()[i] == null)
                     cb.addTypes(i, "0");
             }
             callback.add(cb);
