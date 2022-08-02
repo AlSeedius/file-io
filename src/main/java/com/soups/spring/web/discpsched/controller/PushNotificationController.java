@@ -1,9 +1,6 @@
 package com.soups.spring.web.discpsched.controller;
 
-import com.soups.spring.web.discpsched.model.PushIDRequest;
-import com.soups.spring.web.discpsched.model.PushNotificationRequest;
-import com.soups.spring.web.discpsched.model.PushNotificationResponse;
-import com.soups.spring.web.discpsched.model.UpdateTokenRequest;
+import com.soups.spring.web.discpsched.model.*;
 import com.soups.spring.web.discpsched.service.PushNotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +56,12 @@ public class PushNotificationController {
     @PostMapping("/notification/update")
     public ResponseEntity test(@RequestBody UpdateTokenRequest request){
         pushNotificationService.updateToken(request);
+        return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "OK"), HttpStatus.OK);
+    }
+
+    @PostMapping("/notification/check")
+    public ResponseEntity check (@RequestBody PushIDRequest request){
+        pushNotificationService.checkIfTokenExists(request);
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "OK"), HttpStatus.OK);
     }
 }

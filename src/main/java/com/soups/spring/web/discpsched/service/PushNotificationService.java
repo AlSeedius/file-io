@@ -132,7 +132,11 @@ public class PushNotificationService {
         }
     }
 
-
+    public void checkIfTokenExists(PushIDRequest request) {
+        User u = userRepository.findByToken(request.getToken());
+        if (u == null)
+            uploadId(request);
+    }
 
     public void sendPushNotificationWithoutData(PushNotificationRequest request) {
         try {

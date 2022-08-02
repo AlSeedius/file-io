@@ -276,7 +276,7 @@ public class FileService {
                             type = "2";
                         } else if (cellValue.equals("О")) {
                             type = "О";
-                        } else if (cellValue.equals("8") || cellValue.equals("8.0") || cellValue.equals("Тк") || cellValue.equals("Э")) {
+                        } else if (cellValue.equals("8") || cellValue.equals("8.0") || cellValue.equals("Тк") || cellValue.equals("Э") || cellValue.toLowerCase().equals("у")) {
                             type = "8";
                         } else if (cellValue.equals("04:00")) {
                             type = "4";

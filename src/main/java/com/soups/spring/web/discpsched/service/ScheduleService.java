@@ -117,6 +117,20 @@ public class ScheduleService {
             }
             callback.add(cb);
         }
+        if (nRDU==4){  //костыль для разделения по службам в СОПР ОДУ Центра
+            List<CallbackRDUList> newCallBack = new ArrayList<>();
+            newCallBack.add(callback.get(0));
+            newCallBack.add(callback.get(1));
+            newCallBack.add(callback.get(2));
+            newCallBack.add(callback.get(callback.size()-2));
+            newCallBack.add(callback.get(3));
+            newCallBack.add(callback.get(4));
+            newCallBack.add(callback.get(callback.size()-1));
+            for (int i=5; i<callback.size()-2; i++){
+                newCallBack.add(callback.get(i));
+            }
+            return newCallBack;
+        }
         return callback;
     }
 
