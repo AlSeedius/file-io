@@ -206,7 +206,7 @@ public class ScheduleService {
         for (int i = 0; i < 10; i++) {
             if (scheduleList.get(i) != null)
                 tempList.add(new CallbackMyWorks(scheduleList.get(i).getType(),
-                        calendarRepository.findById(scheduleList.get(i).getDateId()).get().getDay()));
+                        calendarRepository.findById(scheduleList.get(i).getDateId()).get().getDay(), scheduleList.get(i).getPlaceNum(), scheduleList.get(i).getCurrentPlace()));
         }
         return tempList;
     }
@@ -221,7 +221,7 @@ public class ScheduleService {
         for (int i = 0; i < scheduleList.size(); i++) {
             if (scheduleList.get(i) != null)
                 tempList.add(new CallbackMyWorks(scheduleList.get(i).getType(),
-                        calendarRepository.findById(scheduleList.get(i).getDateId()).get().getDay()));
+                        calendarRepository.findById(scheduleList.get(i).getDateId()).get().getDay(), scheduleList.get(i).getPlaceNum(), scheduleList.get(i).getCurrentPlace()));
         }
         return tempList;
     }

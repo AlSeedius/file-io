@@ -190,13 +190,15 @@ public class PushNotificationService {
     }
 
     public void updateToken(UpdateTokenRequest request) {
-        User user = userRepository.findByToken(request.getOldToken());
-        user.setToken(request.getNewToken());
-        userRepository.save(user);
-        if (user.getDeviceType() == 1)
-            updateFCM(user, request);
-        else if (user.getDeviceType() == 2)
-            hmsService.updateHMS(user, request);
+        if (userRepository.findByToken(request.getOldToken()) != null) {
+            User user = userRepository.findByToken(request.getOldToken());
+            user.setToken(request.getNewToken());
+            userRepository.save(user);
+            if (user.getDeviceType() == 1)
+                updateFCM(user, request);
+            else if (user.getDeviceType() == 2)
+                hmsService.updateHMS(user, request);
+        }
     }
 
     private void uploadFCM(User user, PushIDRequest request) {

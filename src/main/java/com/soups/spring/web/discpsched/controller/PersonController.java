@@ -32,4 +32,6 @@ public class PersonController {
     @GetMapping("/rdu/{rduId}")
     public Iterable<Person> rduIdList(@PathVariable Integer rduId) {return personService.rduPersons(rduId);}
 
+    @GetMapping("/rdu/{rduId}/{k}")
+    public Iterable<Person> rduIdList(@PathVariable Integer rduId, @PathVariable Byte k) {return personService.rduPersons(rduId, k);}
 }

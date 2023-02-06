@@ -1,6 +1,12 @@
 package com.soups.spring.web.discpsched.model;
 
+import com.soups.spring.web.discpsched.DAO.RduRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class PushIDRequest {
+
+    @Autowired
+    RduRepository rduRepository;
 
     private Integer userId;
     private String token;
@@ -19,6 +25,13 @@ public class PushIDRequest {
         this.userId=userId;
         this.token=token;
         this.topic=topic;
+        this.deviceType = 1;
+    }
+
+    public PushIDRequest(Integer userId, String token, Integer rduId){
+        this.userId = userId;
+        this.token = token;
+        this.topic = rduRepository.findById(rduId).get().getTopic();
         this.deviceType = 1;
     }
 

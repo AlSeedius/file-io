@@ -255,15 +255,19 @@ public class FileService {
                 break;
             }
         }
+        int placeNum=0;
         int day = 0;
         for (int i = 4; i < z; i++) {
-            if (worksheet.getRow(2).getCell(i).getStringCellValue().length() < 1) {
-            } else {
+            if (worksheet.getRow(2).getCell(i).getStringCellValue().length() > 0) {
                 day++;
                 for (int j = 3; j < 3 + n; j++) {
                     XSSFRow row = worksheet.getRow(j);
+                    String p = row.getCell(0).getStringCellValue();
+                    if (p.length() > 0)
+                        placeNum = getPlaceNumFromString(p);
                     String readName = row.getCell(3).getStringCellValue();
                     String type = "0";
+                    int currentPlace = 0;
                     if (row.getCell(i) == null)
                         type = "0";
                     else {
@@ -271,27 +275,41 @@ public class FileService {
                         if (cellValue.length() == 0)
                             type = "0";
                         else if (cellValue.startsWith("Д") || cellValue.equals("дД")) {
+                            currentPlace = getCurrentPlace(cellValue);
                             type = "1";
                         } else if (cellValue.startsWith("Н") || cellValue.startsWith("4Н") || cellValue.equals("дН")) {
+                            currentPlace = getCurrentPlace(cellValue);
                             type = "2";
                         } else if (cellValue.equals("О")) {
                             type = "О";
-                        } else if (cellValue.equals("8") || cellValue.equals("8.0") || cellValue.equals("Тк") || cellValue.equals("Э") || cellValue.toLowerCase().equals("у")) {
+                        } else if (cellValue.equals("8") || cellValue.equals("8.0") || cellValue.equals("Тк") || cellValue.equals("Э") || cellValue.equalsIgnoreCase("у")) {
                             type = "8";
                         } else if (cellValue.equals("04:00")) {
                             type = "4";
-                        } else if (cellValue.equals("К")) {
+                        } else if (cellValue.equals("К") || cellValue.equals("ПМ")) {
                             type = "К";
                         } else if (cellValue.equals("Б")) {
                             type = "Б";
                         }
                     }
-                    correctSchedule(monthNumber, yearNumber, day, readName, type, rduId);
+                    correctSchedule(monthNumber, yearNumber, day, readName, type, rduId, placeNum, currentPlace);
                 }
             }
         }
     }
+    private int getPlaceNumFromString(String s){
+        if (s.endsWith("место"))
+            return Integer.parseInt(s.substring(0,1));
+        else
+            return 0;
+    }
 
+    private int getCurrentPlace(String s) {
+        if (s.endsWith("2")||s.endsWith("3"))
+            return Integer.parseInt(s.substring(s.length()-1));
+        else
+            return 0;
+    }
     private void parseScheduleODUCDiop(XSSFSheet worksheet, int n) {
         String header = worksheet.getRow(4).getCell(14).toString();
         int monthNumber = monthNumber(header);
@@ -437,7 +455,51 @@ public class FileService {
             }
         }
     }
+    private void correctSchedule(Integer monthNumber, Integer yearNumber, int i, String readName, String type, int i2, int placeNum, int currentPlace) {
+        LocalDate tempDate;
+        Person tempPerson;
+        Schedule tempSchedule;
+        try {
+            tempDate = LocalDate.of(yearNumber, monthNumber, i);
+        } catch (Exception e) {
+            return;
+        }
+        int tempDateId = calendarRepository.findByDay(tempDate).getId() + 1;
+        int length = readName.indexOf('.');
+        String fn = readName.substring(length - 1, length).trim();
+        String ln = readName.substring(0, length - 2).trim();
+        String sn;
+        if (readName.charAt(length + 1) == ' ')
+            sn = readName.substring(length + 2, length + 3).trim();
+        else
+            sn = readName.substring(length + 1, length + 2).trim();
+        tempPerson = personRepository.findByLastNameAndRduIdAndFirstNameAndSecondName(ln, i2, fn, sn);
+        nRdu = rduRepository.findById(i2).get();
+        if (!scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).isEmpty()) {
+            tempSchedule = scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0);
+            if (!type.equals("0") && (!type.equals(tempSchedule.getType()) || tempSchedule.getCurrentPlace()!=currentPlace || tempSchedule.getPlaceNum()!=placeNum)) {
+                tempSchedule.setType(type);
+                ArrayList<String> changes = new ArrayList<>();
+                tempSchedule.setPlaceNum(placeNum);
+                tempSchedule.setCurrentPlace(currentPlace);
+                changes.add(monthNumber.toString());
+                changes.add(tempPerson.getLastName());
+                scheduleRepository.save(tempSchedule);
+                fileOutput.addCorrection(new Correction(calendarRepository.findById(tempDateId).get().getDay(),
+                        ln + " " + fn + "." + sn + "."));
 
+            } else if (type.equals("0")) {
+                scheduleRepository.delete(scheduleRepository.findByDateIdAndPersonId(tempDateId, tempPerson.getId()).get(0));
+                fileOutput.addDelete(new Correction(calendarRepository.findById(tempDateId).get().getDay(),
+                        ln + " " + fn + "." + sn + "."));
+            }
+        } else if (!type.equals("0")) {
+            fileOutput.addNew(new Correction(calendarRepository.findById(tempDateId).get().getDay(),
+                    ln + " " + fn + "." + sn + "."));
+            tempSchedule = new Schedule(tempPerson.getId(), tempDateId, type, placeNum, currentPlace);
+            scheduleRepository.save(tempSchedule);
+        }
+    }
     private void correctSchedule(Integer monthNumber, Integer yearNumber, int i, String readName, String type, int i2) {
         LocalDate tempDate;
         Person tempPerson;
@@ -452,7 +514,7 @@ public class FileService {
         String fn = readName.substring(length - 1, length).trim();
         String ln = readName.substring(0, length - 2).trim();
         String sn;
-        if (readName.substring(length + 1, length + 2).equals(" "))
+        if (readName.charAt(length + 1) == ' ')
             sn = readName.substring(length + 2, length + 3).trim();
         else
             sn = readName.substring(length + 1, length + 2).trim();

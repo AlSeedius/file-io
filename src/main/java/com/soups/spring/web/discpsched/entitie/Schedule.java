@@ -10,6 +10,26 @@ public class Schedule {
     private Integer id;
     @Column(name = "date_id")
     private Integer dateId;
+    @Column(name = "place_num")
+    private Integer placeNum;
+    @Column (name = "current_place")
+    private Integer currentPlace;
+
+    public Integer getPlaceNum() {
+        return placeNum;
+    }
+
+    public void setPlaceNum(Integer placeNum) {
+        this.placeNum = placeNum;
+    }
+
+    public Integer getCurrentPlace() {
+        return currentPlace;
+    }
+
+    public void setCurrentPlace(Integer currentPlace) {
+        this.currentPlace = currentPlace;
+    }
 
     public Integer getId() {
         return id;
@@ -29,6 +49,13 @@ public class Schedule {
         this.dateId =date_id;
         this.personId =person_id;
         this.type=type;
+    }
+    public Schedule(Integer person_id, Integer date_id, String type, Integer placeNum, Integer currentPlace) {
+        this.dateId = date_id;
+        this.personId = person_id;
+        this.type = type;
+        this.placeNum = placeNum;
+        this.currentPlace = currentPlace;
     }
 
     public Integer getDateId() {
