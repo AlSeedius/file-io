@@ -56,7 +56,10 @@ public class PushNotificationService {
                         if (token.length() > 0) {
                             if (schedule.getType().equals("1")) {
                                 if (user.getDeviceType()==1) {
-                                    pushNotificationRequest.setMessage("У Вас завтра дневная смена. Выспитесь крепко!");
+                                    String message = "У Вас завтра дневная смена. Выспитесь крепко!";
+                                    if (schedule.getCurrentPlace()!=0)
+                                        message+= " Работать нужно не где обычно, а на " + schedule.getCurrentPlace() + "-м рабочем месте";
+                                    pushNotificationRequest.setMessage(message);
                                     pushNotificationRequest.setToken(token);
                                     fcmService.sendMessageToToken(pushNotificationRequest);
                                 }

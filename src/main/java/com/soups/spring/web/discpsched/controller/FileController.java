@@ -84,8 +84,8 @@ public class FileController {
                 notificationText = "Был загружен новый график дежурств. Проверьте ближайшие смены в приложении!";
             }
             PushNotificationRequest request = new PushNotificationRequest(notificationHeader, notificationText, rdu.getTopic());
-            hmsService.sendHMSTopicNotification(notificationText, notificationHeader, rdu.getTopic());
-            sendNotification(request);
+         //   hmsService.sendHMSTopicNotification(notificationText, notificationHeader, rdu.getTopic());
+         //   sendNotification(request);
         }
         redirectAttributes.addFlashAttribute("message1",
                 "Вы успешно загрузили файл " + file.getOriginalFilename());

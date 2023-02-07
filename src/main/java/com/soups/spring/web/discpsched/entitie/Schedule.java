@@ -11,9 +11,9 @@ public class Schedule {
     @Column(name = "date_id")
     private Integer dateId;
     @Column(name = "place_num")
-    private Integer placeNum;
+    private Integer placeNum = 0;
     @Column (name = "current_place")
-    private Integer currentPlace;
+    private Integer currentPlace = 0;
 
     public Integer getPlaceNum() {
         return placeNum;
